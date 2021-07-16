@@ -5,13 +5,12 @@ import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
 import com.op.ludo.security.model.Credentials;
 import com.op.ludo.security.model.User;
-import com.op.ludo.security.utils.SecurityContextUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
@@ -22,10 +21,7 @@ import java.io.IOException;
 
 @Component
 @Slf4j
-public class SecurityFilter extends OncePerRequestFilter {
-
-    @Autowired
-    SecurityContextUtil securityContextUtil;
+public class FirebaseTokenFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -36,13 +32,12 @@ public class SecurityFilter extends OncePerRequestFilter {
 
     private void verifyToken(HttpServletRequest request) {
         FirebaseToken decodedToken = null;
-        String token = securityContextUtil.getBearerToken(request);
+        String token = getBearerToken(request);
         try {
             if (token != null && !token.equalsIgnoreCase("undefined")) {
                 decodedToken = FirebaseAuth.getInstance().verifyIdToken(token);
             }
         } catch (FirebaseAuthException e) {
-            e.printStackTrace();
             log.error("Firebase Exception: {}", e.getLocalizedMessage());
         }
         User user = firebaseTokenToUserDto(decodedToken);
@@ -53,6 +48,15 @@ public class SecurityFilter extends OncePerRequestFilter {
             authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
+    }
+
+    private String getBearerToken(HttpServletRequest request) {
+        String bearerToken = null;
+        String authorization = request.getHeader("Authorization");
+        if (StringUtils.hasText(authorization) && authorization.startsWith("Bearer ")) {
+            bearerToken = authorization.substring(7);
+        }
+        return bearerToken;
     }
 
     private User firebaseTokenToUserDto(FirebaseToken decodedToken) {
