@@ -62,4 +62,26 @@ public class BoardState {
 
     @NonNull
     private Long createdTime;
+
+    public BoardState(){
+    }
+
+    public BoardState(@NonNull Long id, @NonNull Boolean isStarted, @NonNull Boolean isEnded, @NonNull Long startTime, @NonNull Long endTime, @NonNull Integer lastDiceRoll, @NonNull Boolean isMovePending, @NonNull Boolean isRollPending, @NonNull Long lastActionTime, @NonNull Integer playerCount, @NonNull String playerIds, @NonNull Integer whoseTurn, @NonNull Integer turnTimeLimit, @NonNull String boardTheme, @NonNull Integer bid, @NonNull Long createdTime) {
+        this.id = id;
+        this.isStarted = isStarted;
+        this.isEnded = isEnded;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.lastDiceRoll = lastDiceRoll;
+        this.isMovePending = isMovePending;
+        this.isRollPending = isRollPending;
+        this.lastActionTime = lastActionTime;
+        this.playerCount = playerCount;
+        this.playerIds = playerIds;
+        this.whoseTurn = whoseTurn;
+        this.turnTimeLimit = turnTimeLimit;
+        this.boardTheme = boardTheme;
+        this.bid = bid;
+        this.createdTime = createdTime;
+    }
 }

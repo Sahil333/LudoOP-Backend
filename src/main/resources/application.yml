@@ -1,2 +1,14 @@
+spring:
+  h2:
+    console:
+      enabled: true
+  datasource:
+    platform: h2
+    url: jdbc:h2:mem:vishu
+    #    url: jdbc:h2:tcp://localhost:9090/mem:vishu
+    driverClassName: org.h2.Driver
+    username: sa
+    password:
+
 server:
   port: 8081
