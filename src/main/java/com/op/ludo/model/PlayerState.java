@@ -3,9 +3,7 @@ package com.op.ludo.model;
 import lombok.Data;
 import lombok.NonNull;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 @Data
 @Entity
@@ -15,8 +13,9 @@ public class PlayerState {
     @NonNull
     private Long playerId;
 
+    @ManyToOne
     @NonNull
-    private Long boardId;
+    private BoardState board;
 
     @NonNull
     private Integer stone1;
@@ -51,12 +50,11 @@ public class PlayerState {
     @NonNull
     private String stoneTheme;
 
-    public PlayerState(){
-    }
+    public PlayerState(){}
 
-    public PlayerState(@NonNull Long playerId, @NonNull Long boardId, @NonNull Integer stone1, @NonNull Integer stone2, @NonNull Integer stone3, @NonNull Integer stone4, @NonNull Integer turnsMissed, @NonNull Integer playerPosition, @NonNull Boolean isPlayerActive, @NonNull Integer homeCount, @NonNull Integer playerNumber, @NonNull String playerType, @NonNull String stoneTheme) {
+    public PlayerState(@NonNull Long playerId, @NonNull BoardState board, @NonNull Integer stone1, @NonNull Integer stone2, @NonNull Integer stone3, @NonNull Integer stone4, @NonNull Integer turnsMissed, @NonNull Integer playerPosition, @NonNull Boolean isPlayerActive, @NonNull Integer homeCount, @NonNull Integer playerNumber, @NonNull String playerType, @NonNull String stoneTheme) {
         this.playerId = playerId;
-        this.boardId = boardId;
+        this.board = board;
         this.stone1 = stone1;
         this.stone2 = stone2;
         this.stone3 = stone3;

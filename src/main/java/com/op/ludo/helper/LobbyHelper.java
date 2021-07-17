@@ -8,12 +8,12 @@ public class LobbyHelper {
     public static BoardState initializeNewBoard(Long playerId){
         long currentTime = System.currentTimeMillis()/1000l;
         BoardState boardState = new BoardState(playerId,false,false,currentTime,-1l,-1,false,
-                false, currentTime,1,playerId.toString(),1,5,"random",100,currentTime);
+                false, currentTime,1,1,5,"random",100,currentTime);
         return boardState;
     }
 
-    public static PlayerState intializeNewPlayer(Long playerId, Long boardId,Integer playerNumber){
-        PlayerState playerState = new PlayerState(playerId,boardId,-11,-12,-13,-14,0,
+    public static PlayerState intializeNewPlayer(Long playerId, BoardState boardState,Integer playerNumber){
+        PlayerState playerState = new PlayerState(playerId,boardState,-11,-12,-13,-14,0,
                 -1,true,0,playerNumber,"human","theme");
         return playerState;
     }

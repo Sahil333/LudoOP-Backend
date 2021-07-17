@@ -4,10 +4,8 @@ package com.op.ludo.model;
 import lombok.Data;
 import lombok.NonNull;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
+import java.util.List;
 
 @Data
 @Entity
@@ -16,7 +14,7 @@ public class BoardState {
 
     @Id
     @NonNull
-    private Long id;
+    private Long boardId;
 
     @NonNull
     private Boolean isStarted;
@@ -45,8 +43,8 @@ public class BoardState {
     @NonNull
     private Integer playerCount;
 
-    @NonNull
-    private String playerIds;
+    @OneToMany(mappedBy = "board")
+    private List<PlayerState> playerStateList;
 
     @NonNull
     private Integer whoseTurn;
@@ -66,8 +64,8 @@ public class BoardState {
     public BoardState(){
     }
 
-    public BoardState(@NonNull Long id, @NonNull Boolean isStarted, @NonNull Boolean isEnded, @NonNull Long startTime, @NonNull Long endTime, @NonNull Integer lastDiceRoll, @NonNull Boolean isMovePending, @NonNull Boolean isRollPending, @NonNull Long lastActionTime, @NonNull Integer playerCount, @NonNull String playerIds, @NonNull Integer whoseTurn, @NonNull Integer turnTimeLimit, @NonNull String boardTheme, @NonNull Integer bid, @NonNull Long createdTime) {
-        this.id = id;
+    public BoardState(@NonNull Long boardId, @NonNull Boolean isStarted, @NonNull Boolean isEnded, @NonNull Long startTime, @NonNull Long endTime, @NonNull Integer lastDiceRoll, @NonNull Boolean isMovePending, @NonNull Boolean isRollPending, @NonNull Long lastActionTime, @NonNull Integer playerCount, @NonNull Integer whoseTurn, @NonNull Integer turnTimeLimit, @NonNull String boardTheme, @NonNull Integer bid, @NonNull Long createdTime) {
+        this.boardId = boardId;
         this.isStarted = isStarted;
         this.isEnded = isEnded;
         this.startTime = startTime;
@@ -77,7 +75,6 @@ public class BoardState {
         this.isRollPending = isRollPending;
         this.lastActionTime = lastActionTime;
         this.playerCount = playerCount;
-        this.playerIds = playerIds;
         this.whoseTurn = whoseTurn;
         this.turnTimeLimit = turnTimeLimit;
         this.boardTheme = boardTheme;
