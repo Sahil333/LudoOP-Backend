@@ -23,6 +23,11 @@ public class LobbyService {
         return playerState.isPresent();
     }
 
+    public Boolean isBoardPresent(Long boardId){
+        Optional<BoardState> boardState = boardStateRepo.findById(boardId);
+        return boardState.isPresent();
+    }
+
     public BoardState createNewBoard(Long playerId){
         BoardState boardState = LobbyHelper.initializeNewBoard(playerId);
         PlayerState playerState = LobbyHelper.intializeNewPlayer(playerId,playerId,1);

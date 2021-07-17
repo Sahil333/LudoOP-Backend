@@ -18,15 +18,24 @@ public class LobbyControllers {
     @Autowired
     LobbyService lobbyService;
 
-    @PostMapping(value = "lobby/create/friend")
+    @PostMapping(value = "lobby/friend/create")
     public ResponseEntity<Map<String,String>> createLobbyFriend(Integer bid,Long playerId){
+        Map<String,String> returnMap = new HashMap<>();
         if(bid == null || playerId == null || bid != 100 || lobbyService.isAlreadyPartOfGame(playerId)){
             return new ResponseEntity(HttpStatus.BAD_REQUEST);
         }
         lobbyService.createNewBoard(playerId);
-        Map<String,String> returnMap = new HashMap<>();
         returnMap.put("boardId",playerId.toString());
         return new ResponseEntity<>(returnMap,HttpStatus.OK);
+    }
+
+    @PostMapping(value = "lobby/friend/join")
+    public ResponseEntity<Map<String,String>> joinLobbyFriend(Long playerId,Long boardId){
+        //we do not need this endpoint need to create a websocket here
+        if(playerId == null || boardId == null || lobbyService.isAlreadyPartOfGame(playerId) || !lobbyService.isBoardPresent(boardId)){
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
 
