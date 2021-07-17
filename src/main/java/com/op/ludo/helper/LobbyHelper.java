@@ -5,9 +5,9 @@ import com.op.ludo.model.PlayerState;
 
 public class LobbyHelper {
 
-    public static BoardState initializeNewBoard(Long playerId){
+    public static BoardState initializeNewBoard(Long boardId){
         long currentTime = System.currentTimeMillis()/1000l;
-        BoardState boardState = new BoardState(playerId,false,false,currentTime,-1l,-1,false,
+        BoardState boardState = new BoardState(boardId,false,false,currentTime,-1l,-1,false,
                 false, currentTime,1,1,5,"random",100,currentTime);
         return boardState;
     }

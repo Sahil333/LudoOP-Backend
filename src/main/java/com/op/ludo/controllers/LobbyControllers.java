@@ -19,12 +19,12 @@ public class LobbyControllers {
     LobbyService lobbyService;
 
     @PostMapping(value = "lobby/friend/create")
-    public ResponseEntity<Map<String,String>> createLobbyFriend(Integer bid,Long playerId){
+    public ResponseEntity<Map<String,String>> createLobbyFriend(Integer bid,Long playerId,Long boardId){
         Map<String,String> returnMap = new HashMap<>();
         if(bid == null || playerId == null || bid != 100 || lobbyService.isAlreadyPartOfGame(playerId)){
             return new ResponseEntity(HttpStatus.BAD_REQUEST);
         }
-        lobbyService.createNewBoard(playerId);
+        lobbyService.createNewBoard(playerId,boardId);
         returnMap.put("boardId",playerId.toString());
         return new ResponseEntity<>(returnMap,HttpStatus.OK);
     }
@@ -35,6 +35,7 @@ public class LobbyControllers {
         if(playerId == null || boardId == null || lobbyService.isAlreadyPartOfGame(playerId) || !lobbyService.isBoardPresent(boardId)){
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
+        lobbyService.joinBoard(playerId,boardId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

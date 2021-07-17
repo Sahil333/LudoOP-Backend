@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -33,11 +34,21 @@ public class LobbyService {
         return boardState.isPresent();
     }
 
-    public BoardState createNewBoard(Long playerId){
-        BoardState boardState = LobbyHelper.initializeNewBoard(playerId);
+    public BoardState createNewBoard(Long playerId,Long boardId){
+        BoardState boardState = LobbyHelper.initializeNewBoard(boardId);
         PlayerState playerState = LobbyHelper.intializeNewPlayer(playerId,boardState,1);
         boardStateRepo.save(boardState);
         playerStateRepo.save(playerState);
+        return boardState;
+    }
+
+    public BoardState joinBoard(Long playerId,Long boardId){
+        BoardState boardState = em.getReference(BoardState.class,boardId);
+        Integer currentCount =  boardState.getPlayerCount();
+        boardState.setPlayerCount(currentCount+1);
+        PlayerState playerState = LobbyHelper.intializeNewPlayer(playerId,boardState,currentCount+1);
+        playerStateRepo.save(playerState);
+        List<PlayerState> playerStateList = playerStateRepo.findByBoardId(boardState);
         return boardState;
     }
 

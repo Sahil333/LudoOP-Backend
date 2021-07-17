@@ -43,7 +43,7 @@ public class BoardState {
     @NonNull
     private Integer playerCount;
 
-    @OneToMany(mappedBy = "board")
+    @OneToMany(mappedBy = "boardState")
     private List<PlayerState> playerStateList;
 
     @NonNull

@@ -15,7 +15,7 @@ public class PlayerState {
 
     @ManyToOne
     @NonNull
-    private BoardState board;
+    private BoardState boardState;
 
     @NonNull
     private Integer stone1;
@@ -52,9 +52,9 @@ public class PlayerState {
 
     public PlayerState(){}
 
-    public PlayerState(@NonNull Long playerId, @NonNull BoardState board, @NonNull Integer stone1, @NonNull Integer stone2, @NonNull Integer stone3, @NonNull Integer stone4, @NonNull Integer turnsMissed, @NonNull Integer playerPosition, @NonNull Boolean isPlayerActive, @NonNull Integer homeCount, @NonNull Integer playerNumber, @NonNull String playerType, @NonNull String stoneTheme) {
+    public PlayerState(@NonNull Long playerId, @NonNull BoardState boardState, @NonNull Integer stone1, @NonNull Integer stone2, @NonNull Integer stone3, @NonNull Integer stone4, @NonNull Integer turnsMissed, @NonNull Integer playerPosition, @NonNull Boolean isPlayerActive, @NonNull Integer homeCount, @NonNull Integer playerNumber, @NonNull String playerType, @NonNull String stoneTheme) {
         this.playerId = playerId;
-        this.board = board;
+        this.boardState = boardState;
         this.stone1 = stone1;
         this.stone2 = stone2;
         this.stone3 = stone3;
