@@ -11,7 +11,7 @@ import java.util.Collection;
 @Service
 public class SecurityContextFacade implements IAuthenticationFacade {
 
-    public FirebasePrincipal getUser() {
+    public FirebasePrincipal getPrincipal() {
         FirebasePrincipal userPrincipal = null;
         SecurityContext securityContext = SecurityContextHolder.getContext();
         Object principal = securityContext.getAuthentication().getPrincipal();

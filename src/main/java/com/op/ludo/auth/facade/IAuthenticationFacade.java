@@ -6,7 +6,7 @@ import org.springframework.security.core.GrantedAuthority;
 import java.util.Collection;
 
 public interface IAuthenticationFacade {
-    FirebasePrincipal getUser();
+    FirebasePrincipal getPrincipal();
 
     Collection<? extends GrantedAuthority> getAuthorities();
 }
