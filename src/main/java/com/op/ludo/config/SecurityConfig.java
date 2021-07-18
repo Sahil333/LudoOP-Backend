@@ -51,27 +51,17 @@ public class SecurityConfig {
                     "/configuration/security", "/swagger-ui.html", "/webjars/**", "/v2/swagger.json");
         }
 
-        // TODO: configure endpoints security according to our needs
         @Override
         protected void configure(HttpSecurity http) throws Exception {
             if (firebaseEnabled) {
                 http.addFilterAfter(registration().getFilter(), RequestCacheAwareFilter.class).authorizeRequests()//
-                        .antMatchers("/api/open/**").hasAnyRole(Roles.ANONYMOUS)//
-                        .antMatchers("/api/client/**").hasRole(Roles.USER)//
-                        .antMatchers("/api/admin/**").hasRole(Roles.ADMIN)//
-                        .antMatchers("/health/**").hasRole(Roles.ADMIN)//
+                        .antMatchers("/v1/lobby/**").hasRole(Roles.USER)//
+//                        .antMatchers("/health/**").hasRole(Roles.ADMIN)//
                         .antMatchers("/**").denyAll()//
                         .and().csrf().disable()//
                         .anonymous().authorities(Roles.ROLE_ANONYMOUS);//
             } else {
-                http.httpBasic().and().authorizeRequests()//
-                        .antMatchers("/api/open/**").hasAnyRole(Roles.ANONYMOUS)//
-                        .antMatchers("/api/client/**").hasRole(Roles.USER)//
-                        .antMatchers("/api/admin/**").hasRole(Roles.ADMIN)//
-                        .antMatchers("/health/**").hasRole(Roles.ADMIN)//
-                        .antMatchers("/**").denyAll()//
-                        .and().csrf().disable()//
-                        .anonymous().authorities(Roles.ROLE_ANONYMOUS);//
+                http.csrf().disable().authorizeRequests().antMatchers("/**").permitAll();
             }
         }
 
