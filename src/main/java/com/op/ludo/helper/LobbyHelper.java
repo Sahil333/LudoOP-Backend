@@ -1,6 +1,7 @@
 package com.op.ludo.helper;
 
 import com.op.ludo.model.BoardState;
+import com.op.ludo.model.PlayerQueue;
 import com.op.ludo.model.PlayerState;
 
 public class LobbyHelper {
@@ -13,8 +14,15 @@ public class LobbyHelper {
     }
 
     public static PlayerState intializeNewPlayer(Long playerId, BoardState boardState,Integer playerNumber){
-        PlayerState playerState = new PlayerState(playerId,boardState,-11,-12,-13,-14,0,
+        Integer stone1 = (-10*playerNumber)-1,stone2 = stone1-1,stone3 = stone2-1,stone4=stone3-1;
+        PlayerState playerState = new PlayerState(playerId,boardState,stone1,stone2,stone3,stone4,0,
                 -1,true,0,playerNumber,"human","theme");
         return playerState;
+    }
+
+    public static PlayerQueue intializePlayerInQueue(Long playerId) {
+        long currentTime = System.currentTimeMillis()/1000l;
+        PlayerQueue playerQueue = new PlayerQueue(playerId,currentTime);
+        return playerQueue;
     }
 }

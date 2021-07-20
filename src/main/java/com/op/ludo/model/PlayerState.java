@@ -13,7 +13,7 @@ public class PlayerState {
     @NonNull
     private Long playerId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @NonNull
     private BoardState boardState;
 
