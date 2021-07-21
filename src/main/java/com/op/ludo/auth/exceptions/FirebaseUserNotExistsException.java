@@ -1,10 +1,10 @@
 package com.op.ludo.auth.exceptions;
 
-import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
-public class FirebaseUserNotExistsException extends AuthenticationCredentialsNotFoundException {
+public class FirebaseUserNotExistsException extends UsernameNotFoundException {
 
-    public FirebaseUserNotExistsException(String msg, Exception e) {
-        super(msg, e);
-    }
+  public FirebaseUserNotExistsException(String msg, Exception e) {
+    super(msg, e);
+  }
 }
