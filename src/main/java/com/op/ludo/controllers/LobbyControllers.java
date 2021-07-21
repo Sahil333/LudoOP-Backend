@@ -10,17 +10,17 @@ import com.op.ludo.service.PlayerQueueService;
 import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
 import java.util.Map;
 
-@Controller
+@RestController
 public class LobbyControllers {
 
     @Autowired
@@ -30,40 +30,42 @@ public class LobbyControllers {
     PlayerQueueService playerQueueService;
 
     @PostMapping(value = "lobby/friend/create")
-    public ResponseEntity<Board> createFriendLobby(@RequestBody BoardRequest request){
+    public Board createFriendLobby(@RequestBody BoardRequest request){
         if(!request.getType().equals(BoardRequest.Type.FRIEND)) {
             throw new InvalidBoardRequest("Invalid board type in request");
         }
         BoardState boardState = lobbyService.handleBoardRequest(request);
-        return new ResponseEntity<>(new Board(boardState.getBoardId()),HttpStatus.OK);
+        return new Board(boardState.getBoardId());
     }
 
     @PostMapping(value = "lobby/friend/join")
-    public ResponseEntity<Map<String,String>> joinFriendLobby(@RequestBody JoinBoard joinBoard){
+    public void joinFriendLobby(@RequestBody JoinBoard joinBoard, HttpServletResponse response){
         lobbyService.joinBoard(joinBoard.getPlayerId(), joinBoard.getBoardId());
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        response.setStatus(HttpStatus.NO_CONTENT.value());
     }
 
     @PostMapping(value = "lobby/online/join")
-    public ResponseEntity<Map<String,String>> joinOnlineLobby(@RequestBody BoardRequest request){
+    public void joinOnlineLobby(@RequestBody BoardRequest request, HttpServletResponse response){
         if(!request.getType().equals(BoardRequest.Type.ONLINE)) {
             throw new InvalidBoardRequest("Invalid board type in request");
         }
         lobbyService.handleBoardRequest(request);
-        return new ResponseEntity<>(HttpStatus.ACCEPTED);
+        response.setStatus(HttpStatus.ACCEPTED.value());
     }
 
     @GetMapping(value = "lobby/online/poll")
-    public ResponseEntity<Board> lobbyOnlineStatus(@RequestParam @NonNull String playerId){
+    public Board lobbyOnlineStatus(@RequestParam @NonNull String playerId, HttpServletResponse response){
         if(playerQueueService.isPlayerInQueue(playerId)){
-            return new ResponseEntity<>(HttpStatus.PROCESSING);
+            //  setting the status PROCESSING will make the client to wait further response
+            //  but we are not sending any further response. Setting it to NO_CONTENT
+            response.setStatus(HttpStatus.NO_CONTENT.value());
         } else if(lobbyService.isPlayerAlreadyPartOfGame(playerId)){
-            Map<String,String> mp = new HashMap<>();
             BoardState boardState =  lobbyService.getCurrentActiveGame(playerId);
-            return new ResponseEntity<>(new Board(boardState.getBoardId()),HttpStatus.OK);
+            return new Board(boardState.getBoardId());
         } else {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            throw new IllegalArgumentException("playerId=" + playerId + " is not part of the queue");
         }
+        return null;
     }
 
 }

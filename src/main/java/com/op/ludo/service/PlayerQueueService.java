@@ -65,7 +65,7 @@ public class PlayerQueueService {
         List<String> playerIds = new ArrayList<>();
         for(int i=0;i<4;i++){
             String queuePlayerId = String.valueOf(lobbyPlayerQueue.dequeue());
-            log.info("{} is the player in queue", queuePlayerId);
+            log.info("dequeued player={}", queuePlayerId);
             playerIds.add(queuePlayerId);
             if(playerQueueRepo.existsById(queuePlayerId)){
                 playerQueueRepo.deleteById(queuePlayerId);
