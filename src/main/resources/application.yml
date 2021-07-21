@@ -17,3 +17,8 @@ player:
   queue:
     time-step: 5000
     gc: 3600000
+
+firebase:
+  auth:
+    enabled: true
+    fetch-user: false
