@@ -14,10 +14,11 @@ import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.transaction.Transactional;
 import java.io.IOException;
-import java.util.Optional;
 
 @Service
+@Transactional
 public class LobbyService {
     @PersistenceContext
     EntityManager em;
@@ -35,12 +36,11 @@ public class LobbyService {
     LobbyPlayerQueque lobbyPlayerQueque;
 
     public Boolean canCreateLobby(Integer bid, Long playerId){
-        return !(bid == null || playerId == null || bid != 100 || isAlreadyPartOfGame(playerId));
+        return !(bid == null || playerId == null || bid != 100 || isPlayerAlreadyPartOfGame(playerId));
     }
 
-    public Boolean isAlreadyPartOfGame(Long playerId){
-        Optional<PlayerState> playerState = playerStateRepo.findById(playerId);
-        return playerState.isPresent();
+    public Boolean isPlayerAlreadyPartOfGame(Long playerId){
+        return playerStateRepo.existsById(playerId);
     }
 
     public Long generateBoardId(){
@@ -54,15 +54,12 @@ public class LobbyService {
     }
 
     public Boolean isBoardPresent(Long boardId){
-        Optional<BoardState> boardState = boardStateRepo.findById(boardId);
-        return boardState.isPresent();
+        return boardStateRepo.existsById(boardId);
     }
 
-    public BoardState createNewBoard(Long playerId,Long boardId){
+    public BoardState createNewBoard(Long boardId){
         BoardState boardState = LobbyHelper.initializeNewBoard(boardId);
-        PlayerState playerState = LobbyHelper.intializeNewPlayer(playerId,boardState,1);
         boardStateRepo.save(boardState);
-        playerStateRepo.save(playerState);
         return boardState;
     }
 
@@ -76,7 +73,7 @@ public class LobbyService {
     }
 
     public Boolean canJoinBoard(Long playerId,Long boardId){
-        if(isBoardPresent(boardId) && !isAlreadyPartOfGame(playerId)){
+        if(isBoardPresent(boardId) && !isPlayerAlreadyPartOfGame(playerId)){
             BoardState boardState = em.getReference(BoardState.class,boardId);
             return boardState.getPlayerCount() < 4;
         }
@@ -92,8 +89,34 @@ public class LobbyService {
 
     @Scheduled(fixedDelay = 5000l)
     public void queueHandeler() throws IOException {
+        System.out.println("Handler Running");
+        while(lobbyPlayerQueque.getQueueSize() > 3){
+            queueBoardCreator();
+        }
         if(!lobbyPlayerQueque.isQueueEmpty()){
-            System.out.println(lobbyPlayerQueque.peekQueue());
+            System.out.println(lobbyPlayerQueque.getQueueSize()+"is the queue Size");
+        }
+    }
+
+    public PlayerState getPlayerState(Long playerId){
+        return em.getReference(PlayerState.class,playerId);
+    }
+
+    public Boolean isPlayerInQueue(Long playerId){
+        return playerQueueRepo.existsById(playerId);
+    }
+
+    private void queueBoardCreator() throws IOException {
+        Long newBoardId = generateBoardId();
+        createNewBoard(newBoardId);
+        for(int i=0;i<4;i++){
+            Long queuePlayerId = Long.valueOf(lobbyPlayerQueque.peekQueue());
+            System.out.println(queuePlayerId+"is the player in queue");
+            joinBoard(queuePlayerId,newBoardId);
+            lobbyPlayerQueque.dequeueQueue();
+            if(playerQueueRepo.existsById(queuePlayerId)){
+                playerQueueRepo.deleteById(queuePlayerId);
+            }
         }
     }
 }

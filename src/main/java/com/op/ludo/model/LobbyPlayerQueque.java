@@ -26,6 +26,9 @@ public class LobbyPlayerQueque {
         } catch (IOException e){
             SpringApplication.exit(applicationContext);
         }
+        while(!isQueueEmpty()){
+            queue.dequeue();
+        }
     }
 
     public Boolean isQueueEmpty(){
@@ -33,6 +36,13 @@ public class LobbyPlayerQueque {
             return false;
         }
         return true;
+    }
+
+    public Long getQueueSize() {
+        if(queue != null) {
+            return queue.size();
+        }
+        return 0l;
     }
 
     public void insertInQueue(String data) throws IOException {

@@ -9,7 +9,7 @@ public class LobbyHelper {
     public static BoardState initializeNewBoard(Long boardId){
         long currentTime = System.currentTimeMillis()/1000l;
         BoardState boardState = new BoardState(boardId,false,false,currentTime,-1l,-1,false,
-                false, currentTime,1,1,5,"random",100,currentTime);
+                false, currentTime,0,1,5,"random",100,currentTime);
         return boardState;
     }
 
