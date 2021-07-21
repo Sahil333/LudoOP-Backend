@@ -13,6 +13,7 @@ repositories {
     maven {
         url = uri('https://repo.maven.apache.org/maven2/')
     }
+    mavenCentral()
 }
 
 dependencies {
@@ -28,6 +29,7 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    implementation 'com.baidu:leansoft-bigqueue:0.7.3'
 }
 
 group = 'com.databaseh2'
