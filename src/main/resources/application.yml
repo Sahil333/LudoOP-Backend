@@ -1,3 +1,6 @@
+server:
+  port: 8081
+
 spring:
   h2:
     console:
@@ -10,5 +13,7 @@ spring:
     username: sa
     password:
 
-server:
-  port: 8081
+player:
+  queue:
+    time-step: 5000
+    gc: 3600000

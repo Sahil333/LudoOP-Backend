@@ -13,14 +13,14 @@ public class LobbyHelper {
         return boardState;
     }
 
-    public static PlayerState intializeNewPlayer(Long playerId, BoardState boardState,Integer playerNumber){
+    public static PlayerState initializeNewPlayer(String playerId, BoardState boardState, Integer playerNumber){
         Integer stone1 = (-10*playerNumber)-1,stone2 = stone1-1,stone3 = stone2-1,stone4=stone3-1;
         PlayerState playerState = new PlayerState(playerId,boardState,stone1,stone2,stone3,stone4,0,
                 -1,true,0,playerNumber,"human","theme");
         return playerState;
     }
 
-    public static PlayerQueue intializePlayerInQueue(Long playerId) {
+    public static PlayerQueue intializePlayerInQueue(String playerId) {
         long currentTime = System.currentTimeMillis()/1000l;
         PlayerQueue playerQueue = new PlayerQueue(playerId,currentTime);
         return playerQueue;

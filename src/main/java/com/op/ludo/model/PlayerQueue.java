@@ -11,13 +11,13 @@ import javax.persistence.Table;
 @Table(name = "playerQueue")
 public class PlayerQueue {
     @Id
-    private Long playerId;
+    private String playerId;
 
     private Long requestTime;
 
     public PlayerQueue(){}
 
-    public PlayerQueue(Long playerId, Long requestTime) {
+    public PlayerQueue(String playerId, Long requestTime) {
         this.playerId = playerId;
         this.requestTime = requestTime;
     }

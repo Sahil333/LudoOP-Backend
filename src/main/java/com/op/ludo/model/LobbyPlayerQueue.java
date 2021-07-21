@@ -9,16 +9,17 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 @Component
-public class LobbyPlayerQueque {
+public class LobbyPlayerQueue {
     @Autowired
     ApplicationContext applicationContext;
 
     private BigQueueImpl queue = null;
 
     @EventListener(ApplicationReadyEvent.class)
-    public void intializeQueue() throws IOException {
+    public void initializeQueue() throws IOException {
         String queueDir = System.getProperty("user.home");
         String queueName = "ludo-queue";
         try{
@@ -53,10 +54,15 @@ public class LobbyPlayerQueque {
         return new String(queue.peek());
     }
 
-    public void dequeueQueue() throws IOException {
+    public String dequeue() throws IOException {
+        String front = null;
         if(!queue.isEmpty()){
-            queue.dequeue();
-            queue.gc();
+            front = new String(queue.dequeue());
         }
+        return front;
+    }
+
+    public void gc() throws IOException {
+        if(queue != null) queue.gc();
     }
 }

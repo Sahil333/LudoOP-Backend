@@ -11,7 +11,7 @@ import javax.persistence.*;
 public class PlayerState {
     @Id
     @NonNull
-    private Long playerId;
+    private String playerId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @NonNull
@@ -52,7 +52,7 @@ public class PlayerState {
 
     public PlayerState(){}
 
-    public PlayerState(@NonNull Long playerId, @NonNull BoardState boardState, @NonNull Integer stone1, @NonNull Integer stone2, @NonNull Integer stone3, @NonNull Integer stone4, @NonNull Integer turnsMissed, @NonNull Integer playerPosition, @NonNull Boolean isPlayerActive, @NonNull Integer homeCount, @NonNull Integer playerNumber, @NonNull String playerType, @NonNull String stoneTheme) {
+    public PlayerState(@NonNull String playerId, @NonNull BoardState boardState, @NonNull Integer stone1, @NonNull Integer stone2, @NonNull Integer stone3, @NonNull Integer stone4, @NonNull Integer turnsMissed, @NonNull Integer playerPosition, @NonNull Boolean isPlayerActive, @NonNull Integer homeCount, @NonNull Integer playerNumber, @NonNull String playerType, @NonNull String stoneTheme) {
         this.playerId = playerId;
         this.boardState = boardState;
         this.stone1 = stone1;

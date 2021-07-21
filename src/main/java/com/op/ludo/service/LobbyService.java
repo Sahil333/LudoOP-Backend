@@ -1,21 +1,19 @@
 package com.op.ludo.service;
 
+import com.op.ludo.controllers.dto.BoardRequest;
 import com.op.ludo.dao.BoardStateRepo;
-import com.op.ludo.dao.PlayerQueueRepo;
 import com.op.ludo.dao.PlayerStateRepo;
+import com.op.ludo.exceptions.InvalidBoardRequest;
 import com.op.ludo.helper.LobbyHelper;
-import com.op.ludo.model.LobbyPlayerQueque;
 import com.op.ludo.model.BoardState;
-import com.op.ludo.model.PlayerQueue;
 import com.op.ludo.model.PlayerState;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
-import java.io.IOException;
+import java.util.List;
 
 @Service
 @Transactional
@@ -30,20 +28,87 @@ public class LobbyService {
     BoardStateRepo boardStateRepo;
 
     @Autowired
-    PlayerQueueRepo playerQueueRepo;
+    PlayerQueueService playerQueueService;
 
-    @Autowired
-    LobbyPlayerQueque lobbyPlayerQueque;
-
-    public Boolean canCreateLobby(Integer bid, Long playerId){
-        return !(bid == null || playerId == null || bid != 100 || isPlayerAlreadyPartOfGame(playerId));
-    }
-
-    public Boolean isPlayerAlreadyPartOfGame(Long playerId){
+    // TODO: should check if already part of game and has left the game. Essentially, the condition
+    //  is a player can be part of one game at a time. If player/client is already part of 1 game,
+    //  it should be able to leave the previous game.
+    public Boolean isPlayerAlreadyPartOfGame(String playerId){
         return playerStateRepo.existsById(playerId);
     }
 
-    public Long generateBoardId(){
+    public BoardState getCurrentActiveGame(String playerId) {
+        return em.getReference(PlayerState.class, playerId).getBoardState();
+    }
+
+    public BoardState joinBoard(String playerId, Long boardId) {
+        BoardState boardState = em.getReference(BoardState.class, boardId);
+        return joinBoard(playerId, boardState);
+    }
+
+    private BoardState joinBoard(String playerId, BoardState boardState){
+        if(!canJoinBoard(playerId, boardState)) {
+            throw new IllegalStateException("playerId="+playerId+" can not join board="+boardState.getBoardId());
+        }
+        int currentCount =  boardState.getPlayerCount();
+        boardState.setPlayerCount(currentCount+1);
+        PlayerState playerState = LobbyHelper.initializeNewPlayer(playerId, boardState,currentCount+1);
+        playerStateRepo.save(playerState);
+        boardStateRepo.save(boardState);
+        return boardState;
+    }
+
+    private Boolean canJoinBoard(String playerId, BoardState boardState){
+        if(!isPlayerAlreadyPartOfGame(playerId)){
+            return boardState.getPlayerCount() < 4;
+        }
+        return false;
+    }
+
+    public BoardState createBoardWithPlayers(List<String> playerIds) {
+        Long boardId = generateBoardId();
+        BoardState boardState = createNewBoard(boardId);
+        for(String playerId: playerIds) {
+            joinBoard(playerId, boardState);
+        }
+        return boardState;
+    }
+
+    public BoardState handleBoardRequest(BoardRequest request) {
+        if(!canCreateLobby(request.getBid(), request.getPlayerId())) {
+            throw new IllegalArgumentException("Invalid board request");
+        }
+        switch (request.getType()) {
+            case FRIEND: return handleFriendBoardRequest(request);
+            case ONLINE: return handleOnlineBoardRequest(request);
+            default:
+                throw new InvalidBoardRequest("boardType="+request.getType()+"is not supported");
+        }
+    }
+
+    private Boolean canCreateLobby(Integer bid, String playerId){
+        return !(bid != 100 || isPlayerAlreadyPartOfGame(playerId));
+    }
+
+    private BoardState handleOnlineBoardRequest(BoardRequest request) {
+        playerQueueService.addToPlayerQueue(request.getPlayerId());
+        return null;
+    }
+
+    private BoardState handleFriendBoardRequest(BoardRequest request) {
+        Long boardId = generateBoardId();
+        BoardState boardState = createNewBoard(boardId);
+        joinBoard(request.getPlayerId(), boardState);
+        return boardState;
+    }
+
+    private BoardState createNewBoard(Long boardId){
+        BoardState boardState = LobbyHelper.initializeNewBoard(boardId);
+        boardStateRepo.save(boardState);
+        return boardState;
+    }
+
+    private Long generateBoardId(){
         Long maxVal = 100000000l;
         Long minVal = 10000000l;
         Long boardId;
@@ -53,70 +118,7 @@ public class LobbyService {
         return boardId;
     }
 
-    public Boolean isBoardPresent(Long boardId){
+    private Boolean isBoardPresent(Long boardId){
         return boardStateRepo.existsById(boardId);
-    }
-
-    public BoardState createNewBoard(Long boardId){
-        BoardState boardState = LobbyHelper.initializeNewBoard(boardId);
-        boardStateRepo.save(boardState);
-        return boardState;
-    }
-
-    public BoardState joinBoard(Long playerId,Long boardId){
-        BoardState boardState = em.getReference(BoardState.class,boardId);
-        Integer currentCount =  boardState.getPlayerCount();
-        boardState.setPlayerCount(currentCount+1);
-        PlayerState playerState = LobbyHelper.intializeNewPlayer(playerId,boardState,currentCount+1);
-        playerStateRepo.save(playerState);
-        return boardState;
-    }
-
-    public Boolean canJoinBoard(Long playerId,Long boardId){
-        if(isBoardPresent(boardId) && !isPlayerAlreadyPartOfGame(playerId)){
-            BoardState boardState = em.getReference(BoardState.class,boardId);
-            return boardState.getPlayerCount() < 4;
-        }
-        return false;
-    }
-
-    public void addToPlayerQueue(Long playerId) throws IOException {
-        lobbyPlayerQueque.insertInQueue(playerId.toString());
-        PlayerQueue playerQueue = LobbyHelper.intializePlayerInQueue(playerId);
-        playerQueueRepo.save(playerQueue);
-        System.out.println(lobbyPlayerQueque.peekQueue());
-    }
-
-    @Scheduled(fixedDelay = 5000l)
-    public void queueHandeler() throws IOException {
-        System.out.println("Handler Running");
-        while(lobbyPlayerQueque.getQueueSize() > 3){
-            queueBoardCreator();
-        }
-        if(!lobbyPlayerQueque.isQueueEmpty()){
-            System.out.println(lobbyPlayerQueque.getQueueSize()+"is the queue Size");
-        }
-    }
-
-    public PlayerState getPlayerState(Long playerId){
-        return em.getReference(PlayerState.class,playerId);
-    }
-
-    public Boolean isPlayerInQueue(Long playerId){
-        return playerQueueRepo.existsById(playerId);
-    }
-
-    private void queueBoardCreator() throws IOException {
-        Long newBoardId = generateBoardId();
-        createNewBoard(newBoardId);
-        for(int i=0;i<4;i++){
-            Long queuePlayerId = Long.valueOf(lobbyPlayerQueque.peekQueue());
-            System.out.println(queuePlayerId+"is the player in queue");
-            joinBoard(queuePlayerId,newBoardId);
-            lobbyPlayerQueque.dequeueQueue();
-            if(playerQueueRepo.existsById(queuePlayerId)){
-                playerQueueRepo.deleteById(queuePlayerId);
-            }
-        }
     }
 }
