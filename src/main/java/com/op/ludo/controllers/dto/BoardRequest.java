@@ -4,17 +4,18 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import lombok.Setter;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 public class BoardRequest {
-    @NonNull private Integer bid;
-    @NonNull private Type type;
-    @NonNull private String playerId;
+  @NonNull private Integer bid;
+  @NonNull private Type type;
+  @Setter private String playerId;
 
-    public enum Type {
-        ONLINE,
-        FRIEND
-    }
+  public enum Type {
+    ONLINE,
+    FRIEND
+  }
 }

@@ -9,5 +9,5 @@ import lombok.NonNull;
 @NoArgsConstructor
 @Getter
 public class Board {
-    @NonNull Long boardId;
+  @NonNull Long boardId;
 }

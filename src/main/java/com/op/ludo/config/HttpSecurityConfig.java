@@ -49,17 +49,17 @@ public class HttpSecurityConfig extends WebSecurityConfigurerAdapter {
   protected void configure(HttpSecurity http) throws Exception {
     if (authEnabled) {
       http.addFilterAfter(registration().getFilter(), RequestCacheAwareFilter.class)
-          .authorizeRequests() //
+          .authorizeRequests()
           .antMatchers("/v1/lobby/**")
-          .hasRole(Role.USER.toString()) //
-          //                        .antMatchers("/health/**").hasRole(Roles.ADMIN)//
+          .hasRole(Role.USER.toString())
+          //                        .antMatchers("/health/**").hasRole(Roles.ADMIN)
           .antMatchers("/**")
-          .denyAll() //
+          .denyAll()
           .and()
           .csrf()
-          .disable() //
+          .disable()
           .anonymous()
-          .authorities(Role.ANONYMOUS.getAuthority()); //
+          .authorities(Role.ANONYMOUS.getAuthority());
     } else {
       http.csrf().disable().authorizeRequests().antMatchers("/**").permitAll();
     }

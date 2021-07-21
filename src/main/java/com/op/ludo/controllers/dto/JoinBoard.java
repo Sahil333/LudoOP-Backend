@@ -9,6 +9,5 @@ import lombok.NonNull;
 @NoArgsConstructor
 @Getter
 public class JoinBoard {
-    @NonNull Long boardId;
-    @NonNull String playerId;
+  @NonNull Long boardId;
 }
