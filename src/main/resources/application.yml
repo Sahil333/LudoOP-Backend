@@ -1,2 +1,7 @@
 server:
   port: 8081
+
+firebase:
+  auth:
+    enabled: true
+    fetch-user: false
