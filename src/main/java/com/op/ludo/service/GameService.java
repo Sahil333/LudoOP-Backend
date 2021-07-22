@@ -1,6 +1,7 @@
 package com.op.ludo.service;
 
 import com.op.ludo.dao.BoardStateRepo;
+import com.op.ludo.exceptions.BoardNotFoundException;
 import com.op.ludo.model.BoardState;
 import com.op.ludo.model.PlayerState;
 import com.op.ludo.util.DateTimeUtil;
@@ -20,13 +21,13 @@ public class GameService {
   @Autowired BoardStateRepo boardRepo;
 
   public void startGame(String playerId, Long boardId) {
-    BoardState board = em.getReference(BoardState.class, boardId);
-    //        if(board.isEmpty()) {
-    //            throw new BoardNotFoundException("boardId="+boardId+" not found");
-    //        }
-    if (canStartGame(playerId, board)) {
-      doStartGame(board);
-      boardRepo.save(board);
+    Optional<BoardState> board = boardRepo.findById(boardId);
+    if (board.isEmpty()) {
+      throw new BoardNotFoundException("boardId=" + boardId + " not found");
+    }
+    if (canStartGame(playerId, board.get())) {
+      doStartGame(board.get());
+      boardRepo.save(board.get());
     }
   }
 
