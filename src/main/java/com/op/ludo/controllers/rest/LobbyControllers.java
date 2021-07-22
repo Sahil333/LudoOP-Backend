@@ -1,4 +1,4 @@
-package com.op.ludo.controllers;
+package com.op.ludo.controllers.rest;
 
 import com.op.ludo.auth.facade.IAuthenticationFacade;
 import com.op.ludo.controllers.dto.Board;

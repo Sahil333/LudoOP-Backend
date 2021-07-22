@@ -26,7 +26,7 @@ public class PlayerState {
 
   @NonNull private Integer playerPosition;
 
-  @NonNull private Boolean isPlayerActive;
+  private boolean isPlayerActive;
 
   @NonNull private Integer homeCount;
 

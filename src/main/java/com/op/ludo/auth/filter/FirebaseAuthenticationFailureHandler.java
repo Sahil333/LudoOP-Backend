@@ -4,8 +4,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.op.ludo.util.DateTimeUtil;
 import java.io.IOException;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -36,7 +37,7 @@ public class FirebaseAuthenticationFailureHandler {
       AuthenticationException exception, HttpServletRequest request)
       throws JsonProcessingException {
     AuthErrorResponse.AuthErrorResponseBuilder errorResponseBuilder = AuthErrorResponse.builder();
-    errorResponseBuilder.dateTime(LocalDateTime.now());
+    errorResponseBuilder.dateTime(DateTimeUtil.now());
     errorResponseBuilder.message(exception.getMessage());
     errorResponseBuilder.statusCode(401);
     errorResponseBuilder.path(request.getRequestURI());
@@ -54,6 +55,6 @@ public class FirebaseAuthenticationFailureHandler {
     private String details;
     private int statusCode;
     private String path;
-    private LocalDateTime dateTime;
+    private ZonedDateTime dateTime;
   }
 }

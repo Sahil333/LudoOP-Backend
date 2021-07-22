@@ -41,7 +41,7 @@ public class PlayerQueueService {
 
   @Scheduled(fixedDelayString = "${player.queue.time-step}")
   public void queueHandler() throws IOException {
-    log.info("Handler Running");
+    //    log.info("Handler Running");
     while (lobbyPlayerQueue.getQueueSize() > 3) {
       createBoard();
     }
@@ -60,10 +60,9 @@ public class PlayerQueueService {
   }
 
   // TODO: if players are removed from the queue and error happens either deleting in queue repo or
-  // creating board
-  //  data will become inconsistent that the players are still in queue table but not in the queue
-  // model
-  //  need a transactional solution for this problem accounting for any failure at any point.
+  //  creating board data will become inconsistent that the players are still in queue table but not
+  // in the queue
+  //  model need a transactional solution for this problem accounting for any failure at any point.
   private void createBoard() throws IOException {
     List<String> playerIds = new ArrayList<>();
     for (int i = 0; i < 4; i++) {
