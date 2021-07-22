@@ -26,8 +26,8 @@ public class LobbyService {
   @Autowired PlayerQueueService playerQueueService;
 
   // TODO: should check if already part of game and has left the game. Essentially, the condition
-  //  is a player can be part of one game at a time. If player/client is already part of 1 game,
-  //  it should be able to leave the previous game.
+  //  is a player can be part of one game at a time. If player/client is already part of a game,
+  //  it should be able to leave that game.
   public Boolean isPlayerAlreadyPartOfGame(String playerId) {
     return playerStateRepo.existsById(playerId);
   }
