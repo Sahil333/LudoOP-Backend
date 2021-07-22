@@ -52,6 +52,8 @@ public class HttpSecurityConfig extends WebSecurityConfigurerAdapter {
           .authorizeRequests()
           .antMatchers("/v1/lobby/**")
           .hasRole(Role.USER.toString())
+          .antMatchers("/join/**")
+          .hasRole(Role.USER.toString())
           //                        .antMatchers("/health/**").hasRole(Roles.ADMIN)
           .antMatchers("/**")
           .denyAll()
