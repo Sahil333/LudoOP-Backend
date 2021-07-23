@@ -1,4 +1,4 @@
-package com.op.ludo.config.websocket;
+package com.op.ludo.config.websocket.subscription;
 
 import java.security.Principal;
 

@@ -1,6 +1,5 @@
-package com.op.ludo.config.websocket.impl;
+package com.op.ludo.config.websocket.subscription;
 
-import com.op.ludo.config.websocket.SubscriptionProvider;
 import com.op.ludo.model.BoardState;
 import com.op.ludo.service.LobbyService;
 import java.security.Principal;

@@ -1,5 +1,6 @@
 package com.op.ludo.config.websocket;
 
+import com.op.ludo.config.websocket.subscription.SubscriptionProvider;
 import java.security.Principal;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;

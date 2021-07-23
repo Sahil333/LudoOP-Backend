@@ -1,6 +1,5 @@
-package com.op.ludo.config.websocket.impl;
+package com.op.ludo.config.websocket.subscription;
 
-import com.op.ludo.config.websocket.SubscriptionProvider;
 import java.security.Principal;
 import java.util.regex.Pattern;
 

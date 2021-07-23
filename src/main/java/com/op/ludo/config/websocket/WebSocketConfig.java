@@ -1,7 +1,8 @@
 package com.op.ludo.config.websocket;
 
-import com.op.ludo.config.websocket.impl.BoardSubscriptionProvider;
-import com.op.ludo.config.websocket.impl.UserErrorQueueProvider;
+import com.op.ludo.config.websocket.subscription.BoardSubscriptionProvider;
+import com.op.ludo.config.websocket.subscription.SubscriptionProvider;
+import com.op.ludo.config.websocket.subscription.UserErrorQueueProvider;
 import com.op.ludo.service.LobbyService;
 import java.util.ArrayList;
 import java.util.List;
