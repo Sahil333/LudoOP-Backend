@@ -12,9 +12,9 @@ public class BoardState {
 
   @Id @NonNull private Long boardId;
 
-  @NonNull private Boolean isStarted;
+  private boolean isStarted;
 
-  @NonNull private Boolean isEnded;
+  private boolean isEnded;
 
   @NonNull private Long startTime;
 
@@ -22,16 +22,16 @@ public class BoardState {
 
   @NonNull private Integer lastDiceRoll;
 
-  @NonNull private Boolean isMovePending;
+  private boolean isMovePending;
 
-  @NonNull private Boolean isRollPending;
+  private boolean isRollPending;
 
   @NonNull private Long lastActionTime;
 
   @NonNull private Integer playerCount;
 
   @OneToMany(mappedBy = "boardState")
-  private List<PlayerState> playerStateList;
+  private List<PlayerState> players;
 
   @NonNull private Integer whoseTurn;
 

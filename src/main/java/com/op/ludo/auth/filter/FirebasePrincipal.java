@@ -36,9 +36,10 @@ public class FirebasePrincipal implements FirebaseUserDetails {
     return token.getEncodedToken();
   }
 
+  /** Returns the uid of the authenticated firebase user */
   @Override
   public String getUsername() {
-    return userRecord != null ? userRecord.getDisplayName() : token.getName();
+    return userRecord != null ? userRecord.getUid() : token.getUid();
   }
 
   @Override
@@ -62,7 +63,7 @@ public class FirebasePrincipal implements FirebaseUserDetails {
   }
 
   @Override
-  public String getUid() {
-    return userRecord != null ? userRecord.getUid() : token.getUid();
+  public String getDisplayName() {
+    return userRecord != null ? userRecord.getDisplayName() : token.getName();
   }
 }

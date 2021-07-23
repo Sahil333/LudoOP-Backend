@@ -31,6 +31,6 @@ public class SecurityContextFacade implements IAuthenticationFacade {
 
   public Boolean isContextSetForUser(String uid) {
     FirebasePrincipal principal = getPrincipal();
-    return principal != null && principal.getUid().equals(uid);
+    return principal != null && principal.getUsername().equals(uid);
   }
 }

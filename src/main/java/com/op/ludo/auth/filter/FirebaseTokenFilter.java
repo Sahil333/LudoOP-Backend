@@ -54,7 +54,7 @@ public class FirebaseTokenFilter extends OncePerRequestFilter {
       FirebaseAuthenticationToken authenticationToken =
           new FirebaseAuthenticationToken(principal, token, principal.getAuthorities());
       authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-      log.debug("authenticated - {}", principal.getUid());
+      log.debug("authenticated - {}", principal.getUsername());
       return authenticationToken;
     } else {
       throw new FirebaseTokenInvalidException("Authorization token is not available in headers");

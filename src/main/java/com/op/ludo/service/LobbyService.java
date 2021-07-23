@@ -9,13 +9,16 @@ import com.op.ludo.model.BoardState;
 import com.op.ludo.model.PlayerState;
 import java.util.List;
 import javax.persistence.EntityManager;
+import javax.persistence.EntityNotFoundException;
 import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 @Transactional
+@Slf4j
 public class LobbyService {
   @PersistenceContext EntityManager em;
 
@@ -26,14 +29,19 @@ public class LobbyService {
   @Autowired PlayerQueueService playerQueueService;
 
   // TODO: should check if already part of game and has left the game. Essentially, the condition
-  //  is a player can be part of one game at a time. If player/client is already part of 1 game,
-  //  it should be able to leave the previous game.
+  //  is a player can be part of one game at a time. If player/client is already part of a game,
+  //  it should be able to leave that game.
   public Boolean isPlayerAlreadyPartOfGame(String playerId) {
     return playerStateRepo.existsById(playerId);
   }
 
   public BoardState getCurrentActiveGame(String playerId) {
-    return em.getReference(PlayerState.class, playerId).getBoardState();
+    try {
+      return em.getReference(PlayerState.class, playerId).getBoardState();
+    } catch (EntityNotFoundException ex) {
+      log.error("No player state found for playerId={}", playerId);
+      return null;
+    }
   }
 
   public BoardState joinBoard(String playerId, Long boardId) {

@@ -2,7 +2,8 @@ package com.op.ludo.controllers.advice;
 
 import com.op.ludo.exceptions.InvalidBoardRequest;
 import com.op.ludo.exceptions.PlayerQueueException;
-import java.time.LocalDateTime;
+import com.op.ludo.util.DateTimeUtil;
+import java.time.ZonedDateTime;
 import javax.servlet.http.HttpServletRequest;
 import lombok.Builder;
 import lombok.Value;
@@ -48,7 +49,7 @@ public class ApiErrorHandler {
       Exception ex, HttpServletRequest request, HttpStatus status) {
     ApiErrorResponse.ApiErrorResponseBuilder errorResponseBuilder = ApiErrorResponse.builder();
     errorResponseBuilder
-        .dateTime(LocalDateTime.now())
+        .dateTime(DateTimeUtil.now())
         .message(ex.getMessage())
         .statusCode(status.value())
         .status(status.getReasonPhrase())
@@ -67,6 +68,6 @@ public class ApiErrorHandler {
     String path;
     int statusCode;
     String status;
-    LocalDateTime dateTime;
+    ZonedDateTime dateTime;
   }
 }
