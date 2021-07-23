@@ -1,5 +1,12 @@
 package com.op.ludo.config.websocket;
 
+import com.op.ludo.config.websocket.impl.BoardSubscriptionProvider;
+import com.op.ludo.config.websocket.impl.UserErrorQueueProvider;
+import com.op.ludo.service.LobbyService;
+import java.util.ArrayList;
+import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
@@ -10,6 +17,16 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @Configuration
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
+
+  @Autowired private LobbyService lobbyService;
+
+  @Bean
+  public List<SubscriptionProvider> subscriptionProviders() {
+    List<SubscriptionProvider> providers = new ArrayList<>();
+    providers.add(new BoardSubscriptionProvider(lobbyService));
+    providers.add(new UserErrorQueueProvider());
+    return providers;
+  }
 
   @Override
   public void configureMessageBroker(MessageBrokerRegistry config) {
@@ -25,6 +42,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
   @Override
   public void configureClientInboundChannel(ChannelRegistration registration) {
-    registration.interceptors(new BoardSubscriptionHandler());
+    registration.interceptors(new SubscriptionHandler(subscriptionProviders()));
   }
 }

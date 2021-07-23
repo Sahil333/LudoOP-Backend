@@ -9,13 +9,16 @@ import com.op.ludo.model.BoardState;
 import com.op.ludo.model.PlayerState;
 import java.util.List;
 import javax.persistence.EntityManager;
+import javax.persistence.EntityNotFoundException;
 import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 @Transactional
+@Slf4j
 public class LobbyService {
   @PersistenceContext EntityManager em;
 
@@ -33,7 +36,12 @@ public class LobbyService {
   }
 
   public BoardState getCurrentActiveGame(String playerId) {
-    return em.getReference(PlayerState.class, playerId).getBoardState();
+    try {
+      return em.getReference(PlayerState.class, playerId).getBoardState();
+    } catch (EntityNotFoundException ex) {
+      log.error("No player state found for playerId={}", playerId);
+      return null;
+    }
   }
 
   public BoardState joinBoard(String playerId, Long boardId) {

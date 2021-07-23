@@ -3,11 +3,12 @@ package com.op.ludo.helper;
 import com.op.ludo.model.BoardState;
 import com.op.ludo.model.PlayerQueue;
 import com.op.ludo.model.PlayerState;
+import com.op.ludo.util.DateTimeUtil;
 
 public class LobbyHelper {
 
   public static BoardState initializeNewBoard(Long boardId) {
-    long currentTime = System.currentTimeMillis() / 1000l;
+    long currentTime = DateTimeUtil.nowEpoch();
     BoardState boardState =
         new BoardState(
             boardId,
@@ -53,7 +54,7 @@ public class LobbyHelper {
   }
 
   public static PlayerQueue intializePlayerInQueue(String playerId) {
-    long currentTime = System.currentTimeMillis() / 1000l;
+    long currentTime = DateTimeUtil.nowEpoch();
     PlayerQueue playerQueue = new PlayerQueue(playerId, currentTime);
     return playerQueue;
   }
