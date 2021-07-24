@@ -85,7 +85,7 @@ public class BoardStompClients {
     headers.add("Authorization", "Bearer " + token.get("idToken"));
     StompSession session =
         stompClient
-            .connect(socketEndpoint, headers, new BoardStompSessionHandler())
+            .connect(socketEndpoint, headers, new BoardStompSessionHandler(token.get("localId")))
             .get(1, TimeUnit.SECONDS);
     this.boardClients.add(session);
     session.subscribe("/topic/game/" + boardId, new GameStompFrameHandler(token.get("localId")));
@@ -147,9 +147,15 @@ public class BoardStompClients {
   }
 
   private class BoardStompSessionHandler extends StompSessionHandlerAdapter {
+    private String uid;
+
+    public BoardStompSessionHandler(String uid) {
+      this.uid = uid;
+    }
+
     @Override
     public void afterConnected(StompSession session, StompHeaders connectedHeaders) {
-      log.info("connected");
+      log.info("connected {}", uid);
     }
 
     @Override
@@ -164,12 +170,12 @@ public class BoardStompClients {
         StompHeaders headers,
         byte[] payload,
         Throwable exception) {
-      log.error("exception ", exception);
+      log.error("exception for {}", uid, exception);
     }
 
     @Override
     public void handleTransportError(StompSession session, Throwable exception) {
-      log.error("exception in transport ", exception);
+      log.error("exception in transport for {}", uid, exception);
     }
   }
 
