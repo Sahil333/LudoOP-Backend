@@ -1,5 +1,6 @@
 package com.op.ludo.integrationTest.helper;
 
+import java.util.HashMap;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -16,9 +17,12 @@ public class FirebaseTokenProvider {
 
   @Autowired TestRestTemplate restTemplate;
 
-  public String getToken() {
+  public Map<String, String> getToken(String email, String password) {
     String APIKey = DataReader.getFirebaseAPIKey();
-    Map<String, String> credentials = DataReader.getCredentials1();
+    Map<String, Object> credentials = new HashMap<>();
+    credentials.put("email", email);
+    credentials.put("password", password);
+    credentials.put("returnSecureToken", true);
     String endpoint = String.format(firebaseTokenEndpoint, APIKey);
     return restTemplate
         .exchange(
@@ -26,7 +30,6 @@ public class FirebaseTokenProvider {
             HttpMethod.POST,
             new HttpEntity<>(credentials),
             new ParameterizedTypeReference<Map<String, String>>() {})
-        .getBody()
-        .get("idToken");
+        .getBody();
   }
 }

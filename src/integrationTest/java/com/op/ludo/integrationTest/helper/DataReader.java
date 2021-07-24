@@ -6,11 +6,12 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.io.Files;
+import com.op.ludo.integrationTest.BoardStompClients;
 import com.op.ludo.model.BoardState;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Map;
+import java.util.List;
 import org.apache.commons.codec.Charsets;
 
 public class DataReader {
@@ -58,9 +59,16 @@ public class DataReader {
     return event;
   }
 
-  public static Map<String, String> getCredentials1() {
+  public static BoardStompClients.UserCredentials getCredentials1() {
     return getResource(
-        "src/integrationTest/resources/data/firebase/Credentials1.json", new TypeReference<>() {});
+        "src/integrationTest/resources/data/firebase/Credentials1.json",
+        BoardStompClients.UserCredentials.class);
+  }
+
+  public static List<BoardStompClients.UserCredentials> getCredentialsList() {
+    return getResource(
+        "src/integrationTest/resources/data/firebase/AllCredentials.json",
+        new TypeReference<>() {});
   }
 
   public static String getFirebaseAPIKey() {
