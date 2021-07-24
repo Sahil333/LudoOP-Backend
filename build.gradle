@@ -2,7 +2,13 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '2.5.2'
     id 'io.spring.dependency-management' version '1.0.11.RELEASE'
-    id 'com.github.sherter.google-java-format' version '0.9'
+    id "com.diffplug.spotless" version "5.14.2"
+}
+
+spotless {
+    java {
+        googleJavaFormat().aosp()
+    }
 }
 
 repositories {
