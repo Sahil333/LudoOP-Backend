@@ -8,23 +8,22 @@ import org.springframework.security.config.annotation.web.socket.AbstractSecurit
 @Configuration
 public class WebSocketSecurityConfig extends AbstractSecurityWebSocketMessageBrokerConfigurer {
 
-  @Override
-  protected void configureInbound(MessageSecurityMetadataSourceRegistry messages) {
-    messages
-        .nullDestMatcher()
-        .authenticated()
-        .simpDestMatchers("/app/**")
-        .hasRole(Role.USER.toString())
-        .simpSubscribeDestMatchers("/topic/game/**", "/queue/**", "/user/queue/**")
-        .hasRole(Role.USER.toString())
-        .simpMessageDestMatchers("/topic/**", "/queue/**", "/user/queue/**")
-        .hasRole(Role.ADMIN.toString())
-        .anyMessage()
-        .denyAll();
-  }
+    @Override
+    protected void configureInbound(MessageSecurityMetadataSourceRegistry messages) {
+        messages.nullDestMatcher()
+                .authenticated()
+                .simpDestMatchers("/app/**")
+                .hasRole(Role.USER.toString())
+                .simpSubscribeDestMatchers("/topic/game/**", "/queue/**", "/user/queue/**")
+                .hasRole(Role.USER.toString())
+                .simpMessageDestMatchers("/topic/**", "/queue/**", "/user/queue/**")
+                .hasRole(Role.ADMIN.toString())
+                .anyMessage()
+                .denyAll();
+    }
 
-  @Override
-  protected boolean sameOriginDisabled() {
-    return true;
-  }
+    @Override
+    protected boolean sameOriginDisabled() {
+        return true;
+    }
 }

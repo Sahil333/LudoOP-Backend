@@ -6,5 +6,5 @@ import java.util.List;
 import org.springframework.data.repository.CrudRepository;
 
 public interface PlayerStateRepo extends CrudRepository<PlayerState, String> {
-  List<PlayerState> findByBoardState(BoardState boardState);
+    List<PlayerState> findByBoardState(BoardState boardState);
 }

@@ -15,22 +15,22 @@ import org.springframework.core.io.ClassPathResource;
 @Slf4j
 public class FirebaseConfig {
 
-  @Primary
-  @Bean
-  public void firebaseInit() {
-    InputStream inputStream;
-    try {
-      inputStream = new ClassPathResource("firebase_config.json").getInputStream();
-      FirebaseOptions options =
-          FirebaseOptions.builder()
-              .setCredentials(GoogleCredentials.fromStream(inputStream))
-              .build();
-      if (FirebaseApp.getApps().isEmpty()) {
-        FirebaseApp.initializeApp(options);
-      }
-      log.info("Firebase Initialized");
-    } catch (IOException e) {
-      log.info("Error initializing firebase", e);
+    @Primary
+    @Bean
+    public void firebaseInit() {
+        InputStream inputStream;
+        try {
+            inputStream = new ClassPathResource("firebase_config.json").getInputStream();
+            FirebaseOptions options =
+                    FirebaseOptions.builder()
+                            .setCredentials(GoogleCredentials.fromStream(inputStream))
+                            .build();
+            if (FirebaseApp.getApps().isEmpty()) {
+                FirebaseApp.initializeApp(options);
+            }
+            log.info("Firebase Initialized");
+        } catch (IOException e) {
+            log.info("Error initializing firebase", e);
+        }
     }
-  }
 }

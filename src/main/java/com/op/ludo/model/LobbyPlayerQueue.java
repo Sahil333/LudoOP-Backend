@@ -11,55 +11,55 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class LobbyPlayerQueue {
-  @Autowired ApplicationContext applicationContext;
+    @Autowired ApplicationContext applicationContext;
 
-  private BigQueueImpl queue = null;
+    private BigQueueImpl queue = null;
 
-  @EventListener(ApplicationReadyEvent.class)
-  public void initializeQueue() throws IOException {
-    String queueDir = System.getProperty("user.home");
-    String queueName = "ludo-queue";
-    try {
-      queue = new BigQueueImpl(queueDir, queueName);
-    } catch (IOException e) {
-      SpringApplication.exit(applicationContext);
+    @EventListener(ApplicationReadyEvent.class)
+    public void initializeQueue() throws IOException {
+        String queueDir = System.getProperty("user.home");
+        String queueName = "ludo-queue";
+        try {
+            queue = new BigQueueImpl(queueDir, queueName);
+        } catch (IOException e) {
+            SpringApplication.exit(applicationContext);
+        }
+        while (!isQueueEmpty()) {
+            queue.dequeue();
+        }
     }
-    while (!isQueueEmpty()) {
-      queue.dequeue();
+
+    public Boolean isQueueEmpty() {
+        if (queue != null && !queue.isEmpty()) {
+            return false;
+        }
+        return true;
     }
-  }
 
-  public Boolean isQueueEmpty() {
-    if (queue != null && !queue.isEmpty()) {
-      return false;
+    public Long getQueueSize() {
+        if (queue != null) {
+            return queue.size();
+        }
+        return 0l;
     }
-    return true;
-  }
 
-  public Long getQueueSize() {
-    if (queue != null) {
-      return queue.size();
+    public void insertInQueue(String data) throws IOException {
+        queue.enqueue(data.getBytes());
     }
-    return 0l;
-  }
 
-  public void insertInQueue(String data) throws IOException {
-    queue.enqueue(data.getBytes());
-  }
-
-  public String peekQueue() throws IOException {
-    return new String(queue.peek());
-  }
-
-  public String dequeue() throws IOException {
-    String front = null;
-    if (!queue.isEmpty()) {
-      front = new String(queue.dequeue());
+    public String peekQueue() throws IOException {
+        return new String(queue.peek());
     }
-    return front;
-  }
 
-  public void gc() throws IOException {
-    if (queue != null) queue.gc();
-  }
+    public String dequeue() throws IOException {
+        String front = null;
+        if (!queue.isEmpty()) {
+            front = new String(queue.dequeue());
+        }
+        return front;
+    }
+
+    public void gc() throws IOException {
+        if (queue != null) queue.gc();
+    }
 }

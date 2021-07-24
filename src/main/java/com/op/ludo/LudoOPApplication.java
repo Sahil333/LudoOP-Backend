@@ -8,7 +8,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SpringBootApplication
 public class LudoOPApplication {
 
-  public static void main(String[] args) {
-    SpringApplication.run(LudoOPApplication.class, args);
-  }
+    public static void main(String[] args) {
+        SpringApplication.run(LudoOPApplication.class, args);
+    }
 }

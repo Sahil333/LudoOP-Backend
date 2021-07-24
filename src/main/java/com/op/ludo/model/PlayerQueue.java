@@ -9,14 +9,14 @@ import lombok.Data;
 @Entity
 @Table(name = "playerQueue")
 public class PlayerQueue {
-  @Id private String playerId;
+    @Id private String playerId;
 
-  private Long requestTime;
+    private Long requestTime;
 
-  public PlayerQueue() {}
+    public PlayerQueue() {}
 
-  public PlayerQueue(String playerId, Long requestTime) {
-    this.playerId = playerId;
-    this.requestTime = requestTime;
-  }
+    public PlayerQueue(String playerId, Long requestTime) {
+        this.playerId = playerId;
+        this.requestTime = requestTime;
+    }
 }

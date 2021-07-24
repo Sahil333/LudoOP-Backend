@@ -14,14 +14,14 @@ import org.springframework.stereotype.Controller;
 @Slf4j
 public class UserActionController {
 
-  @Autowired SimpMessagingTemplate messagingTemplate;
+    @Autowired SimpMessagingTemplate messagingTemplate;
 
-  @Autowired GameService gameService;
+    @Autowired GameService gameService;
 
-  @MessageMapping("/game/action/start")
-  public void startGame(Principal principal, @Header("boardId") Long boardId) {
-    gameService.startGame(principal.getName(), boardId);
-    messagingTemplate.convertAndSend(
-        "/topic/game/" + boardId, new GameStarted(principal.getName()));
-  }
+    @MessageMapping("/game/action/start")
+    public void startGame(Principal principal, @Header("boardId") Long boardId) {
+        gameService.startGame(principal.getName(), boardId);
+        messagingTemplate.convertAndSend(
+                "/topic/game/" + boardId, new GameStarted(principal.getName()));
+    }
 }
