@@ -48,11 +48,12 @@ public class HttpSecurityConfig extends WebSecurityConfigurerAdapter {
   @Override
   protected void configure(HttpSecurity http) throws Exception {
     if (authEnabled) {
-      http.addFilterAfter(registration().getFilter(), RequestCacheAwareFilter.class)
+      http.antMatcher("/v1/**")
+          .addFilterAfter(registration().getFilter(), RequestCacheAwareFilter.class)
           .authorizeRequests()
           .antMatchers("/v1/lobby/**")
           .hasRole(Role.USER.toString())
-          .antMatchers("/join/**")
+          .antMatchers("/v1/join/**")
           .hasRole(Role.USER.toString())
           //                        .antMatchers("/health/**").hasRole(Roles.ADMIN)
           .antMatchers("/**")

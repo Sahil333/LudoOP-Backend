@@ -6,8 +6,6 @@ import com.op.ludo.model.BoardState;
 import com.op.ludo.model.PlayerState;
 import com.op.ludo.util.DateTimeUtil;
 import java.util.Optional;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,8 +13,6 @@ import org.springframework.stereotype.Service;
 @Service
 @Transactional
 public class GameService {
-
-  @PersistenceContext EntityManager em;
 
   @Autowired BoardStateRepo boardRepo;
 

@@ -30,7 +30,9 @@ public class BoardState {
 
   @NonNull private Integer playerCount;
 
-  @OneToMany(mappedBy = "boardState")
+  @OneToMany(
+      mappedBy = "boardState",
+      cascade = {CascadeType.ALL})
   private List<PlayerState> players;
 
   @NonNull private Integer whoseTurn;
