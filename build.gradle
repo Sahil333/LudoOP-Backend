@@ -20,11 +20,11 @@ sourceSets {
             runtimeClasspath += main.output + test.output
             srcDir file('src/integrationTest/java')
         }
-        resources.srcDir file('src/integrationTest/resources')
     }
 }
 
 configurations {
+    integrationTestAnnotationProcessor.extendsFrom annotationProcessor
     integrationTestImplementation.extendsFrom testImplementation
     integrationTestCompile.extendsFrom testCompile
     integrationTestRuntime.extendsFrom testRuntime
@@ -67,6 +67,10 @@ test {
 task integrationTest(type: Test) {
     testClassesDirs = sourceSets.integrationTest.output.classesDirs
     classpath = sourceSets.integrationTest.runtimeClasspath
+}
+
+integrationTest {
+    useJUnitPlatform()
 }
 
 check.dependsOn integrationTest

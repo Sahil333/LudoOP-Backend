@@ -40,14 +40,14 @@ import org.springframework.web.socket.sockjs.client.WebSocketTransport;
 @Slf4j
 public class BoardStompClients {
 
-  private List<StompSession> boardClients;
-  private Long boardId;
-  private String socketEndpoint;
-  private List<UserCredentials> users;
-  private Map<String, BlockingQueue<String>> boardMessages;
-  private Map<String, BlockingQueue<String>> userErrorMessages;
+  private final List<StompSession> boardClients;
+  private final Long boardId;
+  private final String socketEndpoint;
+  private final List<UserCredentials> users;
+  private final Map<String, BlockingQueue<String>> boardMessages;
+  private final Map<String, BlockingQueue<String>> userErrorMessages;
 
-  private FirebaseTokenProvider tokenProvider;
+  private final FirebaseTokenProvider tokenProvider;
 
   public BoardStompClients(
       Long boardId,
@@ -156,11 +156,6 @@ public class BoardStompClients {
     @Override
     public void afterConnected(StompSession session, StompHeaders connectedHeaders) {
       log.info("connected {}", uid);
-    }
-
-    @Override
-    public Type getPayloadType(StompHeaders headers) {
-      return String.class;
     }
 
     @Override
