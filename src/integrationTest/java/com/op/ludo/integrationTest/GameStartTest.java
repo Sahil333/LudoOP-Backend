@@ -61,26 +61,25 @@ public class GameStartTest {
 
     // verify
     String expectedAction = DataReader.getStartedAction();
-
     // user1
     String action = boardClients.getMessage(0, 300);
-    assertThat(expectedAction, equalTo(action));
+    assertThat(action, equalTo(expectedAction));
 
     // user2
     action = boardClients.getMessage(1, 300);
-    assertThat(expectedAction, equalTo(action));
+    assertThat(action, equalTo(expectedAction));
 
     // user3
     action = boardClients.getMessage(2, 300);
-    assertThat(expectedAction, equalTo(action));
+    assertThat(action, equalTo(expectedAction));
 
     // user4
     action = boardClients.getMessage(3, 300);
-    assertThat(expectedAction, equalTo(action));
+    assertThat(action, equalTo(expectedAction));
 
     Optional<BoardState> boardStateActual = boardStateRepo.findById(boardState.getBoardId());
-    assertThat(true, equalTo(boardStateActual.isPresent()));
-    assertThat(true, equalTo(boardStateActual.get().isStarted()));
+    assertThat(boardStateActual.isPresent(), equalTo(true));
+    assertThat(boardStateActual.get().isStarted(), equalTo(true));
   }
 
   private void setPlayerState(BoardState board) {
