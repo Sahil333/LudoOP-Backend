@@ -11,26 +11,26 @@ import org.springframework.stereotype.Service;
 @Service
 public class SecurityContextFacade implements IAuthenticationFacade {
 
-  @Value("${firebase.auth.enabled}")
-  boolean isAuthEnabled;
+    @Value("${firebase.auth.enabled}")
+    boolean isAuthEnabled;
 
-  public FirebasePrincipal getPrincipal() {
-    FirebasePrincipal userPrincipal = null;
-    SecurityContext securityContext = SecurityContextHolder.getContext();
-    Object principal = securityContext.getAuthentication().getPrincipal();
-    if (principal instanceof FirebasePrincipal) {
-      userPrincipal = ((FirebasePrincipal) principal);
+    public FirebasePrincipal getPrincipal() {
+        FirebasePrincipal userPrincipal = null;
+        SecurityContext securityContext = SecurityContextHolder.getContext();
+        Object principal = securityContext.getAuthentication().getPrincipal();
+        if (principal instanceof FirebasePrincipal) {
+            userPrincipal = ((FirebasePrincipal) principal);
+        }
+        return userPrincipal;
     }
-    return userPrincipal;
-  }
 
-  public Collection<? extends GrantedAuthority> getAuthorities() {
-    SecurityContext securityContext = SecurityContextHolder.getContext();
-    return securityContext.getAuthentication().getAuthorities();
-  }
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        SecurityContext securityContext = SecurityContextHolder.getContext();
+        return securityContext.getAuthentication().getAuthorities();
+    }
 
-  public Boolean isContextSetForUser(String uid) {
-    FirebasePrincipal principal = getPrincipal();
-    return principal != null && principal.getUsername().equals(uid);
-  }
+    public Boolean isContextSetForUser(String uid) {
+        FirebasePrincipal principal = getPrincipal();
+        return principal != null && principal.getUsername().equals(uid);
+    }
 }

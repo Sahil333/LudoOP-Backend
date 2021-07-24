@@ -19,30 +19,30 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
-  @Autowired private LobbyService lobbyService;
+    @Autowired private LobbyService lobbyService;
 
-  @Bean
-  public List<SubscriptionProvider> subscriptionProviders() {
-    List<SubscriptionProvider> providers = new ArrayList<>();
-    providers.add(new BoardSubscriptionProvider(lobbyService));
-    providers.add(new UserErrorQueueProvider());
-    return providers;
-  }
+    @Bean
+    public List<SubscriptionProvider> subscriptionProviders() {
+        List<SubscriptionProvider> providers = new ArrayList<>();
+        providers.add(new BoardSubscriptionProvider(lobbyService));
+        providers.add(new UserErrorQueueProvider());
+        return providers;
+    }
 
-  @Override
-  public void configureMessageBroker(MessageBrokerRegistry config) {
-    config.enableSimpleBroker("/topic", "/queue");
-    config.setApplicationDestinationPrefixes("/app");
-  }
+    @Override
+    public void configureMessageBroker(MessageBrokerRegistry config) {
+        config.enableSimpleBroker("/topic", "/queue");
+        config.setApplicationDestinationPrefixes("/app");
+    }
 
-  @Override
-  public void registerStompEndpoints(StompEndpointRegistry registry) {
-    registry.addEndpoint("v1/join");
-    registry.addEndpoint("v1/join").withSockJS();
-  }
+    @Override
+    public void registerStompEndpoints(StompEndpointRegistry registry) {
+        registry.addEndpoint("v1/join");
+        registry.addEndpoint("v1/join").withSockJS();
+    }
 
-  @Override
-  public void configureClientInboundChannel(ChannelRegistration registration) {
-    registration.interceptors(new SubscriptionHandler(subscriptionProviders()));
-  }
+    @Override
+    public void configureClientInboundChannel(ChannelRegistration registration) {
+        registration.interceptors(new SubscriptionHandler(subscriptionProviders()));
+    }
 }

@@ -4,9 +4,11 @@ set -e
 
 REPO_ROOT_DIR="$(git rev-parse --show-toplevel)"
 
-files=$((git diff --cached --name-only --diff-filter=ACMR | grep -Ei "\.java$") || true)
-if [ ! -z "${files}" ]; then
-    comma_files=$(echo "$files" | paste -s -d "," -)
-    "${REPO_ROOT_DIR}/gradlew" goJF -DgoogleJavaFormat.include="$comma_files"
-    git add $(echo "$files" | paste -s -d " " -)
-fi
+filesToFormat="$(git diff --cached --name-only --diff-filter=ACMR | awk '$1 ~ /\.kts|\.java|\.kt/ { print $1}')"
+
+for sourceFilePath in $filesToFormat
+do
+    echo "${REPO_ROOT_DIR}"
+    "${REPO_ROOT_DIR}/gradlew" spotlessApply -PspotlessIdeHook="${REPO_ROOT_DIR}/${sourceFilePath}"
+    git add $sourceFilePath
+done;

@@ -20,112 +20,113 @@ import org.springframework.stereotype.Service;
 @Transactional
 @Slf4j
 public class LobbyService {
-  @PersistenceContext EntityManager em;
+    @PersistenceContext EntityManager em;
 
-  @Autowired PlayerStateRepo playerStateRepo;
+    @Autowired PlayerStateRepo playerStateRepo;
 
-  @Autowired BoardStateRepo boardStateRepo;
+    @Autowired BoardStateRepo boardStateRepo;
 
-  @Autowired PlayerQueueService playerQueueService;
+    @Autowired PlayerQueueService playerQueueService;
 
-  // TODO: should check if already part of game and has left the game. Essentially, the condition
-  //  is a player can be part of one game at a time. If player/client is already part of a game,
-  //  it should be able to leave that game.
-  public Boolean isPlayerAlreadyPartOfGame(String playerId) {
-    return playerStateRepo.existsById(playerId);
-  }
-
-  public BoardState getCurrentActiveGame(String playerId) {
-    try {
-      return em.getReference(PlayerState.class, playerId).getBoardState();
-    } catch (EntityNotFoundException ex) {
-      log.error("No player state found for playerId={}", playerId);
-      return null;
+    // TODO: should check if already part of game and has left the game. Essentially, the condition
+    //  is a player can be part of one game at a time. If player/client is already part of a game,
+    //  it should be able to leave that game.
+    public Boolean isPlayerAlreadyPartOfGame(String playerId) {
+        return playerStateRepo.existsById(playerId);
     }
-  }
 
-  public BoardState joinBoard(String playerId, Long boardId) {
-    BoardState boardState = em.getReference(BoardState.class, boardId);
-    return joinBoard(playerId, boardState);
-  }
-
-  private BoardState joinBoard(String playerId, BoardState boardState) {
-    if (!canJoinBoard(playerId, boardState)) {
-      throw new IllegalStateException(
-          "playerId=" + playerId + " can not join board=" + boardState.getBoardId());
+    public BoardState getCurrentActiveGame(String playerId) {
+        try {
+            return em.getReference(PlayerState.class, playerId).getBoardState();
+        } catch (EntityNotFoundException ex) {
+            log.error("No player state found for playerId={}", playerId);
+            return null;
+        }
     }
-    int currentCount = boardState.getPlayerCount();
-    boardState.setPlayerCount(currentCount + 1);
-    PlayerState playerState =
-        LobbyHelper.initializeNewPlayer(playerId, boardState, currentCount + 1);
-    playerStateRepo.save(playerState);
-    boardStateRepo.save(boardState);
-    return boardState;
-  }
 
-  private Boolean canJoinBoard(String playerId, BoardState boardState) {
-    if (!isPlayerAlreadyPartOfGame(playerId)) {
-      return boardState.getPlayerCount() < 4;
+    public BoardState joinBoard(String playerId, Long boardId) {
+        BoardState boardState = em.getReference(BoardState.class, boardId);
+        return joinBoard(playerId, boardState);
     }
-    return false;
-  }
 
-  public BoardState createBoardWithPlayers(List<String> playerIds) {
-    Long boardId = generateBoardId();
-    BoardState boardState = createNewBoard(boardId);
-    for (String playerId : playerIds) {
-      joinBoard(playerId, boardState);
+    private BoardState joinBoard(String playerId, BoardState boardState) {
+        if (!canJoinBoard(playerId, boardState)) {
+            throw new IllegalStateException(
+                    "playerId=" + playerId + " can not join board=" + boardState.getBoardId());
+        }
+        int currentCount = boardState.getPlayerCount();
+        boardState.setPlayerCount(currentCount + 1);
+        PlayerState playerState =
+                LobbyHelper.initializeNewPlayer(playerId, boardState, currentCount + 1);
+        playerStateRepo.save(playerState);
+        boardStateRepo.save(boardState);
+        return boardState;
     }
-    return boardState;
-  }
 
-  public BoardState handleBoardRequest(BoardRequest request) {
-    if (!canCreateLobby(request.getBid(), request.getPlayerId())) {
-      throw new IllegalArgumentException("Invalid board request");
+    private Boolean canJoinBoard(String playerId, BoardState boardState) {
+        if (!isPlayerAlreadyPartOfGame(playerId)) {
+            return boardState.getPlayerCount() < 4;
+        }
+        return false;
     }
-    switch (request.getType()) {
-      case FRIEND:
-        return handleFriendBoardRequest(request);
-      case ONLINE:
-        return handleOnlineBoardRequest(request);
-      default:
-        throw new InvalidBoardRequest("boardType=" + request.getType() + "is not supported");
+
+    public BoardState createBoardWithPlayers(List<String> playerIds) {
+        Long boardId = generateBoardId();
+        BoardState boardState = createNewBoard(boardId);
+        for (String playerId : playerIds) {
+            joinBoard(playerId, boardState);
+        }
+        return boardState;
     }
-  }
 
-  private Boolean canCreateLobby(Integer bid, String playerId) {
-    return !(bid != 100 || isPlayerAlreadyPartOfGame(playerId));
-  }
+    public BoardState handleBoardRequest(BoardRequest request) {
+        if (!canCreateLobby(request.getBid(), request.getPlayerId())) {
+            throw new IllegalArgumentException("Invalid board request");
+        }
+        switch (request.getType()) {
+            case FRIEND:
+                return handleFriendBoardRequest(request);
+            case ONLINE:
+                return handleOnlineBoardRequest(request);
+            default:
+                throw new InvalidBoardRequest(
+                        "boardType=" + request.getType() + "is not supported");
+        }
+    }
 
-  private BoardState handleOnlineBoardRequest(BoardRequest request) {
-    playerQueueService.addToPlayerQueue(request.getPlayerId());
-    return null;
-  }
+    private Boolean canCreateLobby(Integer bid, String playerId) {
+        return !(bid != 100 || isPlayerAlreadyPartOfGame(playerId));
+    }
 
-  private BoardState handleFriendBoardRequest(BoardRequest request) {
-    Long boardId = generateBoardId();
-    BoardState boardState = createNewBoard(boardId);
-    joinBoard(request.getPlayerId(), boardState);
-    return boardState;
-  }
+    private BoardState handleOnlineBoardRequest(BoardRequest request) {
+        playerQueueService.addToPlayerQueue(request.getPlayerId());
+        return null;
+    }
 
-  private BoardState createNewBoard(Long boardId) {
-    BoardState boardState = LobbyHelper.initializeNewBoard(boardId);
-    boardStateRepo.save(boardState);
-    return boardState;
-  }
+    private BoardState handleFriendBoardRequest(BoardRequest request) {
+        Long boardId = generateBoardId();
+        BoardState boardState = createNewBoard(boardId);
+        joinBoard(request.getPlayerId(), boardState);
+        return boardState;
+    }
 
-  private Long generateBoardId() {
-    Long maxVal = 100000000l;
-    Long minVal = 10000000l;
-    Long boardId;
-    do {
-      boardId = Math.round(Math.random() * (maxVal - minVal + 1) + minVal);
-    } while (isBoardPresent(boardId));
-    return boardId;
-  }
+    private BoardState createNewBoard(Long boardId) {
+        BoardState boardState = LobbyHelper.initializeNewBoard(boardId);
+        boardStateRepo.save(boardState);
+        return boardState;
+    }
 
-  private Boolean isBoardPresent(Long boardId) {
-    return boardStateRepo.existsById(boardId);
-  }
+    private Long generateBoardId() {
+        Long maxVal = 100000000l;
+        Long minVal = 10000000l;
+        Long boardId;
+        do {
+            boardId = Math.round(Math.random() * (maxVal - minVal + 1) + minVal);
+        } while (isBoardPresent(boardId));
+        return boardId;
+    }
+
+    private Boolean isBoardPresent(Long boardId) {
+        return boardStateRepo.existsById(boardId);
+    }
 }

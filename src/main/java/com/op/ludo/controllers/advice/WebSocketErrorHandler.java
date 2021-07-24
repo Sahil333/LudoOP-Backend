@@ -14,30 +14,33 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 @ControllerAdvice
 public class WebSocketErrorHandler {
 
-  @MessageExceptionHandler
-  @SendToUser(destinations = "/queue/errors", broadcast = false)
-  public GameErrorResponse handleGameException(Exception ex, @Headers Map<String, Object> headers) {
-    return buildGameError(ex, (String) headers.get(SimpMessageHeaderAccessor.DESTINATION_HEADER));
-  }
-
-  private GameErrorResponse buildGameError(Exception ex, String destination) {
-    GameErrorResponse.GameErrorResponseBuilder errorResponseBuilder = GameErrorResponse.builder();
-    errorResponseBuilder
-        .dateTime(DateTimeUtil.now())
-        .message(ex.getMessage())
-        .destination(destination);
-    if (ex.getCause() != null) {
-      errorResponseBuilder.message(ex.getCause().getMessage());
+    @MessageExceptionHandler
+    @SendToUser(destinations = "/queue/errors", broadcast = false)
+    public GameErrorResponse handleGameException(
+            Exception ex, @Headers Map<String, Object> headers) {
+        return buildGameError(
+                ex, (String) headers.get(SimpMessageHeaderAccessor.DESTINATION_HEADER));
     }
-    return errorResponseBuilder.build();
-  }
 
-  @Value
-  @Builder
-  public static class GameErrorResponse {
-    String message;
-    String details;
-    String destination;
-    ZonedDateTime dateTime;
-  }
+    private GameErrorResponse buildGameError(Exception ex, String destination) {
+        GameErrorResponse.GameErrorResponseBuilder errorResponseBuilder =
+                GameErrorResponse.builder();
+        errorResponseBuilder
+                .dateTime(DateTimeUtil.now())
+                .message(ex.getMessage())
+                .destination(destination);
+        if (ex.getCause() != null) {
+            errorResponseBuilder.message(ex.getCause().getMessage());
+        }
+        return errorResponseBuilder.build();
+    }
+
+    @Value
+    @Builder
+    public static class GameErrorResponse {
+        String message;
+        String details;
+        String destination;
+        ZonedDateTime dateTime;
+    }
 }

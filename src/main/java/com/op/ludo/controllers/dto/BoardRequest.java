@@ -10,12 +10,12 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 public class BoardRequest {
-  @NonNull private Integer bid;
-  @NonNull private Type type;
-  @Setter private String playerId;
+    @NonNull private Integer bid;
+    @NonNull private Type type;
+    @Setter private String playerId;
 
-  public enum Type {
-    ONLINE,
-    FRIEND
-  }
+    public enum Type {
+        ONLINE,
+        FRIEND
+    }
 }

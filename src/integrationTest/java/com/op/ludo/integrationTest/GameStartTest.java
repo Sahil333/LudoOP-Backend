@@ -24,67 +24,68 @@ import org.springframework.messaging.simp.stomp.StompHeaders;
 @Slf4j
 public class GameStartTest {
 
-  private static final String socketEndpoint = "ws://localhost:%s/v1/join";
+    private static final String socketEndpoint = "ws://localhost:%s/v1/join";
 
-  @LocalServerPort private Integer port;
+    @LocalServerPort private Integer port;
 
-  private BoardStompClients boardClients;
+    private BoardStompClients boardClients;
 
-  @Autowired BoardStateRepo boardStateRepo;
+    @Autowired BoardStateRepo boardStateRepo;
 
-  @Autowired FirebaseTokenProvider tokenProvider;
+    @Autowired FirebaseTokenProvider tokenProvider;
 
-  @AfterEach
-  public void setup() throws ExecutionException, InterruptedException, TimeoutException {
-    if (boardClients != null) boardClients.stopClients();
-  }
-
-  @Test
-  public void startTheGame() throws ExecutionException, InterruptedException, TimeoutException {
-    // setup
-    BoardState boardState = DataReader.getReadyToStartBoard();
-    setPlayerState(boardState);
-    boardStateRepo.save(boardState);
-
-    List<BoardStompClients.UserCredentials> credentials = DataReader.getCredentialsList();
-    String endpoint = String.format(socketEndpoint, port);
-    boardClients =
-        new BoardStompClients(boardState.getBoardId(), credentials, endpoint, tokenProvider);
-    // To let all subscription to be finished first, sleep
-    Thread.sleep(500L);
-
-    // act
-    StompHeaders headers = new StompHeaders();
-    headers.add("boardId", String.valueOf(boardState.getBoardId()));
-    headers.add("destination", "/app/game/action/start");
-    boardClients.send(headers, null, 0);
-
-    // verify
-    String expectedAction = DataReader.getStartedAction();
-    // user1
-    String action = boardClients.getMessage(0, 300);
-    assertThat(action, equalTo(expectedAction));
-
-    // user2
-    action = boardClients.getMessage(1, 300);
-    assertThat(action, equalTo(expectedAction));
-
-    // user3
-    action = boardClients.getMessage(2, 300);
-    assertThat(action, equalTo(expectedAction));
-
-    // user4
-    action = boardClients.getMessage(3, 300);
-    assertThat(action, equalTo(expectedAction));
-
-    Optional<BoardState> boardStateActual = boardStateRepo.findById(boardState.getBoardId());
-    assertThat(boardStateActual.isPresent(), equalTo(true));
-    assertThat(boardStateActual.get().isStarted(), equalTo(true));
-  }
-
-  private void setPlayerState(BoardState board) {
-    for (PlayerState player : board.getPlayers()) {
-      player.setBoardState(board);
+    @AfterEach
+    public void setup() throws ExecutionException, InterruptedException, TimeoutException {
+        if (boardClients != null) boardClients.stopClients();
     }
-  }
+
+    @Test
+    public void startTheGame() throws ExecutionException, InterruptedException, TimeoutException {
+        // setup
+        BoardState boardState = DataReader.getReadyToStartBoard();
+        setPlayerState(boardState);
+        boardStateRepo.save(boardState);
+
+        List<BoardStompClients.UserCredentials> credentials = DataReader.getCredentialsList();
+        String endpoint = String.format(socketEndpoint, port);
+        boardClients =
+                new BoardStompClients(
+                        boardState.getBoardId(), credentials, endpoint, tokenProvider);
+        // To let all subscription to be finished first, sleep
+        Thread.sleep(500L);
+
+        // act
+        StompHeaders headers = new StompHeaders();
+        headers.add("boardId", String.valueOf(boardState.getBoardId()));
+        headers.add("destination", "/app/game/action/start");
+        boardClients.send(headers, null, 0);
+
+        // verify
+        String expectedAction = DataReader.getStartedAction();
+        // user1
+        String action = boardClients.getMessage(0, 300);
+        assertThat(action, equalTo(expectedAction));
+
+        // user2
+        action = boardClients.getMessage(1, 300);
+        assertThat(action, equalTo(expectedAction));
+
+        // user3
+        action = boardClients.getMessage(2, 300);
+        assertThat(action, equalTo(expectedAction));
+
+        // user4
+        action = boardClients.getMessage(3, 300);
+        assertThat(action, equalTo(expectedAction));
+
+        Optional<BoardState> boardStateActual = boardStateRepo.findById(boardState.getBoardId());
+        assertThat(boardStateActual.isPresent(), equalTo(true));
+        assertThat(boardStateActual.get().isStarted(), equalTo(true));
+    }
+
+    private void setPlayerState(BoardState board) {
+        for (PlayerState player : board.getPlayers()) {
+            player.setBoardState(board);
+        }
+    }
 }

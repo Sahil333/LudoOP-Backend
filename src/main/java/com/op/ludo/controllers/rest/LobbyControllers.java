@@ -21,51 +21,52 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("v1/")
 public class LobbyControllers {
 
-  @Autowired LobbyService lobbyService;
+    @Autowired LobbyService lobbyService;
 
-  @Autowired PlayerQueueService playerQueueService;
+    @Autowired PlayerQueueService playerQueueService;
 
-  @Autowired IAuthenticationFacade auth;
+    @Autowired IAuthenticationFacade auth;
 
-  @PostMapping(value = "lobby/friend/create")
-  public Board createFriendLobby(@RequestBody BoardRequest request) {
-    if (!request.getType().equals(BoardRequest.Type.FRIEND)) {
-      throw new InvalidBoardRequest("Invalid board type in request");
+    @PostMapping(value = "lobby/friend/create")
+    public Board createFriendLobby(@RequestBody BoardRequest request) {
+        if (!request.getType().equals(BoardRequest.Type.FRIEND)) {
+            throw new InvalidBoardRequest("Invalid board type in request");
+        }
+        request.setPlayerId(auth.getPrincipal().getUsername());
+        BoardState boardState = lobbyService.handleBoardRequest(request);
+        return new Board(boardState.getBoardId());
     }
-    request.setPlayerId(auth.getPrincipal().getUsername());
-    BoardState boardState = lobbyService.handleBoardRequest(request);
-    return new Board(boardState.getBoardId());
-  }
 
-  @PostMapping(value = "lobby/friend/join")
-  public void joinFriendLobby(@RequestBody JoinBoard joinBoard, HttpServletResponse response) {
-    lobbyService.joinBoard(auth.getPrincipal().getUsername(), joinBoard.getBoardId());
-    response.setStatus(HttpStatus.NO_CONTENT.value());
-  }
-
-  @PostMapping(value = "lobby/online/join")
-  public void joinOnlineLobby(@RequestBody BoardRequest request, HttpServletResponse response) {
-    if (!request.getType().equals(BoardRequest.Type.ONLINE)) {
-      throw new InvalidBoardRequest("Invalid board type in request");
+    @PostMapping(value = "lobby/friend/join")
+    public void joinFriendLobby(@RequestBody JoinBoard joinBoard, HttpServletResponse response) {
+        lobbyService.joinBoard(auth.getPrincipal().getUsername(), joinBoard.getBoardId());
+        response.setStatus(HttpStatus.NO_CONTENT.value());
     }
-    request.setPlayerId(auth.getPrincipal().getUsername());
-    lobbyService.handleBoardRequest(request);
-    response.setStatus(HttpStatus.ACCEPTED.value());
-  }
 
-  @GetMapping(value = "lobby/poll")
-  public Board lobbyOnlineStatus(HttpServletResponse response) {
-    String playerId = auth.getPrincipal().getUsername();
-    if (playerQueueService.isPlayerInQueue(playerId)) {
-      //  setting the status PROCESSING will make the client to wait further response
-      //  but we are not sending any further response. Setting it to NO_CONTENT
-      response.setStatus(HttpStatus.NO_CONTENT.value());
-    } else if (lobbyService.isPlayerAlreadyPartOfGame(playerId)) {
-      BoardState boardState = lobbyService.getCurrentActiveGame(playerId);
-      return new Board(boardState.getBoardId());
-    } else {
-      throw new IllegalArgumentException("playerId=" + playerId + " is not part of the queue");
+    @PostMapping(value = "lobby/online/join")
+    public void joinOnlineLobby(@RequestBody BoardRequest request, HttpServletResponse response) {
+        if (!request.getType().equals(BoardRequest.Type.ONLINE)) {
+            throw new InvalidBoardRequest("Invalid board type in request");
+        }
+        request.setPlayerId(auth.getPrincipal().getUsername());
+        lobbyService.handleBoardRequest(request);
+        response.setStatus(HttpStatus.ACCEPTED.value());
     }
-    return null;
-  }
+
+    @GetMapping(value = "lobby/poll")
+    public Board lobbyOnlineStatus(HttpServletResponse response) {
+        String playerId = auth.getPrincipal().getUsername();
+        if (playerQueueService.isPlayerInQueue(playerId)) {
+            //  setting the status PROCESSING will make the client to wait further response
+            //  but we are not sending any further response. Setting it to NO_CONTENT
+            response.setStatus(HttpStatus.NO_CONTENT.value());
+        } else if (lobbyService.isPlayerAlreadyPartOfGame(playerId)) {
+            BoardState boardState = lobbyService.getCurrentActiveGame(playerId);
+            return new Board(boardState.getBoardId());
+        } else {
+            throw new IllegalArgumentException(
+                    "playerId=" + playerId + " is not part of the queue");
+        }
+        return null;
+    }
 }

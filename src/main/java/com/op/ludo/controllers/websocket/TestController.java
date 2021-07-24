@@ -9,8 +9,8 @@ import org.springframework.stereotype.Controller;
 @Slf4j
 public class TestController {
 
-  @MessageMapping("/test")
-  public void test(String msg, Principal principal) {
-    log.info(principal.getName());
-  }
+    @MessageMapping("/test")
+    public void test(String msg, Principal principal) {
+        log.info(principal.getName());
+    }
 }
