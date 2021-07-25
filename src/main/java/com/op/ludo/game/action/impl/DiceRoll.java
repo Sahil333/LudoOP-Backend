@@ -5,17 +5,23 @@ import com.op.ludo.game.action.Action;
 
 public class DiceRoll extends AbstractAction<DiceRoll.DiceRollArgs> {
 
-    public DiceRoll(String playerId) {
-        super(Action.DICEROLL, new DiceRollArgs(playerId));
+    public DiceRoll(String playerId, Long boardId) {
+        super(Action.DICEROLL, new DiceRollArgs(playerId, boardId));
     }
 
     public static class DiceRollArgs {
+        private final Long boardId;
         private final String playerId;
         private final Integer diceRoll;
 
-        public DiceRollArgs(String playerId) {
+        public DiceRollArgs(String playerId, Long boardId) {
             this.playerId = playerId;
+            this.boardId = boardId;
             this.diceRoll = diceRollGenerator();
+        }
+
+        public Long getBoardId() {
+            return boardId;
         }
 
         public String getPlayerId() {

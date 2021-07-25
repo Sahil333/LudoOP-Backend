@@ -2,6 +2,11 @@ package com.op.ludo.game.action;
 
 public enum Action {
     STARTED,
+    STONEMOVEREQ,
     STONEMOVE,
-    DICEROLL
+    DICEROLLREQ,
+    DICEROLL,
+    STONEMOVEPENDING,
+    DICEROLLPENDING,
+    ENDED
 }
