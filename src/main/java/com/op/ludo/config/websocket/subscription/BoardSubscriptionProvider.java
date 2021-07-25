@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
 
 public class BoardSubscriptionProvider implements SubscriptionProvider {
 
-    private static final String boardTopicPattern = "\\/topic\\/game\\/(?<boardId>[0-9]{8})";
+    private static final String boardTopicPattern = "/topic/game/(?<boardId>[0-9]{8})";
     private final LobbyService lobbyService;
 
     public BoardSubscriptionProvider(LobbyService lobbyService) {

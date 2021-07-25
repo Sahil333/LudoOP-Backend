@@ -5,7 +5,7 @@ import java.util.regex.Pattern;
 
 public class UserErrorQueueProvider implements SubscriptionProvider {
 
-    private static final String userErrorQueuePattern = "\\/user\\/queue\\/errors";
+    private static final String userErrorQueuePattern = "/user/queue/errors";
 
     @Override
     public boolean handles(String destination) {
