@@ -109,6 +109,7 @@ public class GamePlayService {
                         getStoneBaseValue(playerState.getPlayerNumber(), 4));
             }
         }
+        throw new InvalidPlayerMoveException("Invalid move.");
     }
 
     private PlayerState updatePlayerStateWithNewPosition(
