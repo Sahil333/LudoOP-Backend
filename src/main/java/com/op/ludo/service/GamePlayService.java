@@ -2,6 +2,7 @@ package com.op.ludo.service;
 
 import com.op.ludo.dao.PlayerStateRepo;
 import com.op.ludo.exceptions.InvalidPlayerMoveException;
+import com.op.ludo.game.action.impl.DiceRoll;
 import com.op.ludo.game.action.impl.StoneMove;
 import com.op.ludo.model.BoardState;
 import com.op.ludo.model.PlayerState;
@@ -22,6 +23,16 @@ public class GamePlayService {
     @PersistenceContext EntityManager em;
 
     @Autowired PlayerStateRepo playerStateRepo;
+
+    public DiceRoll rollDiceForPlayer(String playerId) {
+        PlayerState playerState = em.find(PlayerState.class, playerId);
+        BoardState boardState = playerState.getBoardState();
+        if (!boardState.isRollPending()
+                || boardState.getWhoseTurn() != playerState.getPlayerNumber()) {
+            throw new InvalidPlayerMoveException("Inavlid dice roll request.");
+        }
+        return new DiceRoll(playerId);
+    }
 
     public Boolean isStoneMoveValid(StoneMove stoneMove) throws InvalidPlayerMoveException {
         if (!lobbyService.isPlayerAlreadyPartOfGame(stoneMove.getArgs().getPlayerId())) {
