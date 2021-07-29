@@ -5,9 +5,13 @@ import com.op.ludo.controllers.dto.Board;
 import com.op.ludo.controllers.dto.BoardRequest;
 import com.op.ludo.controllers.dto.JoinBoard;
 import com.op.ludo.exceptions.InvalidBoardRequest;
+import com.op.ludo.game.action.AbstractAction;
 import com.op.ludo.model.BoardState;
+import com.op.ludo.service.GamePlayService;
 import com.op.ludo.service.LobbyService;
 import com.op.ludo.service.PlayerQueueService;
+import java.util.ArrayList;
+import java.util.List;
 import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -26,6 +30,8 @@ public class LobbyControllers {
     @Autowired PlayerQueueService playerQueueService;
 
     @Autowired IAuthenticationFacade auth;
+
+    @Autowired GamePlayService gamePlayService;
 
     @PostMapping(value = "lobby/friend/create")
     public Board createFriendLobby(@RequestBody BoardRequest request) {
@@ -68,5 +74,12 @@ public class LobbyControllers {
                     "playerId=" + playerId + " is not part of the queue");
         }
         return null;
+    }
+    /* WARNING */
+    /* Below Code is only for testing and will be removed*/
+
+    @PostMapping(value = "test/mymove")
+    public List<AbstractAction> testMymoveController() {
+        return new ArrayList<>();
     }
 }
