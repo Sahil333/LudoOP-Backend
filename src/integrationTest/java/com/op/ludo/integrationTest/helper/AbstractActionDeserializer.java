@@ -33,7 +33,9 @@ public class AbstractActionDeserializer extends StdDeserializer<AbstractAction> 
             return jsonParser.getCodec().treeToValue(node, DiceRollPending.class);
         } else {
             throw new JsonParseException(
-                    jsonParser, "no matching concrete class found for AbstractAction");
+                    jsonParser,
+                    "no matching concrete class found for AbstractAction="
+                            + ((TextNode) node.get("action")).textValue());
         }
     }
 }
