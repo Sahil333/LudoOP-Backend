@@ -123,7 +123,6 @@ public class GamePlayService {
         BoardState boardState = em.getReference(BoardState.class, stoneMove.getArgs().getBoardId());
         boardState.setRollPending(true);
         boardState.setMovePending(false);
-        boardStateRepo.save(boardState);
         DiceRollPending diceRollPending;
         if (boardState.getLastDiceRoll() == 6) {
             diceRollPending =
@@ -138,8 +137,10 @@ public class GamePlayService {
                             boardState.getBoardId(),
                             nextPlayer.getPlayerId(),
                             nextPlayer.getPlayerNumber());
+            boardState.setWhoseTurn(nextPlayer.getPlayerNumber());
         }
         actionList.add(diceRollPending);
+        boardStateRepo.save(boardState);
         return actionList;
     }
 

@@ -1,5 +1,8 @@
 package com.op.ludo.integrationTest;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+
 import com.op.ludo.dao.BoardStateRepo;
 import com.op.ludo.integrationTest.helper.AppObjectMapper;
 import com.op.ludo.integrationTest.helper.DataReader;
@@ -9,6 +12,7 @@ import com.op.ludo.model.PlayerState;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,8 +39,8 @@ public abstract class BaseIntegrationTest {
         boardStateRepo.deleteAll();
     }
 
-    protected BoardStompClients setupBoardStompClients(Long boardId)
-            throws InterruptedException, ExecutionException, TimeoutException {
+    @SneakyThrows
+    protected BoardStompClients setupBoardStompClients(Long boardId) {
         List<BoardStompClients.UserCredentials> credentials = DataReader.getCredentialsList();
         String endpoint = String.format(socketEndpoint, port);
         boardClients =
@@ -55,5 +59,21 @@ public abstract class BaseIntegrationTest {
         for (PlayerState player : board.getPlayers()) {
             player.setBoardState(board);
         }
+    }
+
+    protected <T> T checkAndReturnActions(Class<T> targetClass) {
+        T actions = boardClients.getMessage(0, 300, targetClass);
+
+        T actions2 = boardClients.getMessage(1, 300, targetClass);
+
+        T actions3 = boardClients.getMessage(2, 300, targetClass);
+
+        T actions4 = boardClients.getMessage(3, 300, targetClass);
+
+        assertThat(actions, equalTo(actions2));
+        assertThat(actions, equalTo(actions3));
+        assertThat(actions, equalTo(actions4));
+
+        return actions;
     }
 }

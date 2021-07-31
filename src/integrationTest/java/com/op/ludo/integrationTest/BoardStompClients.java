@@ -103,7 +103,7 @@ public class BoardStompClients {
     }
 
     public String getPlayerId(int userIndex) {
-        return users.get(0).getUid();
+        return users.get(userIndex).getUid();
     }
 
     public void send(StompHeaders headers, Object payload, int userIndex) {

@@ -11,8 +11,6 @@ import com.op.ludo.game.action.impl.StoneMove;
 import com.op.ludo.integrationTest.helper.DataReader;
 import com.op.ludo.model.BoardState;
 import com.op.ludo.util.DateTimeUtil;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
@@ -20,7 +18,7 @@ import org.junit.jupiter.api.Test;
 public class StoneMoveTests extends BaseIntegrationTest {
 
     @Test
-    public void firstMove() throws ExecutionException, InterruptedException, TimeoutException {
+    public void firstMove() {
         // setup
         BoardState boardState = DataReader.getStartedBoard();
         setPlayerState(boardState);
@@ -33,26 +31,14 @@ public class StoneMoveTests extends BaseIntegrationTest {
 
         setupBoardStompClients(boardState.getBoardId());
 
+        // action
         boardClients.send(
                 "/app/game/action/moveStone",
                 new StoneMoveDto(boardState.getBoardId(), 3, -13, 1),
                 0);
 
-        ActionsWithBoardState actions =
-                boardClients.getMessage(0, 300, ActionsWithBoardState.class);
-
-        ActionsWithBoardState actions2 =
-                boardClients.getMessage(1, 300, ActionsWithBoardState.class);
-
-        ActionsWithBoardState actions3 =
-                boardClients.getMessage(2, 300, ActionsWithBoardState.class);
-
-        ActionsWithBoardState actions4 =
-                boardClients.getMessage(3, 300, ActionsWithBoardState.class);
-
-        assertThat(actions, equalTo(actions2));
-        assertThat(actions, equalTo(actions3));
-        assertThat(actions, equalTo(actions3));
+        // verify
+        ActionsWithBoardState actions = checkAndReturnActions(ActionsWithBoardState.class);
 
         assertThat(actions.getActions().size(), equalTo(2));
         assertThat(
@@ -80,10 +66,77 @@ public class StoneMoveTests extends BaseIntegrationTest {
     }
 
     @Test
-    public void checkMoves() {}
+    public void checkMoves() {
+        // setup1
+        // Move stone from somewhere in the middle
+        BoardState boardState = DataReader.getStartedBoard();
+        setPlayerState(boardState);
+        boardState.setLastDiceRoll(4);
+        boardState.setWhoseTurn(1);
+        boardState.getPlayerState(1).setStone1(15);
+        boardState.setMovePending(true);
+        boardState.setRollPending(false);
+        boardState.setLastActionTime(DateTimeUtil.nowEpoch());
+        boardStateRepo.save(boardState);
+
+        setupBoardStompClients(boardState.getBoardId());
+
+        // action
+        boardClients.send(
+                "/app/game/action/moveStone",
+                new StoneMoveDto(boardState.getBoardId(), 1, 15, 19),
+                0);
+
+        // verify
+        ActionsWithBoardState actions = checkAndReturnActions(ActionsWithBoardState.class);
+
+        assertThat(actions.getActions().size(), equalTo(2));
+        assertThat(
+                actions.getActions().get(0),
+                equalTo(
+                        new StoneMove(
+                                boardState.getBoardId(), boardClients.getPlayerId(0), 1, 15, 19)));
+        assertThat(
+                actions.getActions().get(1),
+                equalTo(
+                        new DiceRollPending(
+                                boardState.getBoardId(), boardClients.getPlayerId(1), 2)));
+
+        boardState = boardStateRepo.findById(boardState.getBoardId()).get();
+        assertThat(boardState.getWhoseTurn(), equalTo(2));
+        assertThat(boardState.getPlayerState(1).getStone1(), equalTo(19));
+        assertThat(boardState.isRollPending(), equalTo(true));
+        assertThat(boardState.isMovePending(), equalTo(false));
+
+        assertThat(actions.getBoard().getWhoseTurn(), equalTo(2));
+        assertThat(actions.getBoard().getPlayerState(1).getStone1(), equalTo(19));
+        assertThat(actions.getBoard().isRollPending(), equalTo(true));
+        assertThat(actions.getBoard().isMovePending(), equalTo(false));
+
+        // setup2
+        // check cut move
+        boardState.setLastDiceRoll(3);
+        boardState.getPlayerState(2).setStone3(16);
+        boardState.setMovePending(true);
+        boardState.setRollPending(false);
+        boardStateRepo.save(boardState);
+
+        // action
+        boardClients.send(
+                "/app/game/action/moveStone",
+                new StoneMoveDto(boardState.getBoardId(), 3, 16, 19),
+                1);
+
+        // verify
+        actions = checkAndReturnActions(ActionsWithBoardState.class);
+
+        // setup2
+        // check home way
+        log.info("yo");
+    }
 
     @Test
-    public void errorScenarios() throws ExecutionException, InterruptedException, TimeoutException {
+    public void errorScenarios() {
         // setup1
         // Dice roll is not six but move is made on base stone
         BoardState boardState = DataReader.getStartedBoard();
