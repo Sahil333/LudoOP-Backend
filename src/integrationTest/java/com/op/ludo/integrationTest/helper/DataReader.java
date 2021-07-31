@@ -1,11 +1,10 @@
 package com.op.ludo.integrationTest.helper;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.io.Files;
+import com.op.ludo.controllers.dto.websocket.ActionsWithBoardState;
 import com.op.ludo.integrationTest.BoardStompClients;
 import com.op.ludo.model.BoardState;
 import java.io.File;
@@ -41,11 +40,7 @@ public class DataReader {
 
     private static ObjectMapper getMapper() {
         if (mapper != null) return mapper;
-        mapper = new ObjectMapper();
-        mapper.registerModule(new JavaTimeModule());
-        mapper.configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, true);
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        return mapper;
+        return AppObjectMapper.objectMapper();
     }
 
     public static String getFileAsString(String path) {
@@ -80,7 +75,9 @@ public class DataReader {
                 "src/integrationTest/resources/data/game/BoardReadyState.json", BoardState.class);
     }
 
-    public static String getStartedAction() {
-        return getFileAsString("src/integrationTest/resources/data/game/StartedAction.txt");
+    public static ActionsWithBoardState getStartedAction() {
+        return getResource(
+                "src/integrationTest/resources/data/game/StartedAction.json",
+                ActionsWithBoardState.class);
     }
 }

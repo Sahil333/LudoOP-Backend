@@ -1,13 +1,16 @@
 package com.op.ludo.game.action;
 
+import lombok.EqualsAndHashCode;
+
+@EqualsAndHashCode
 public abstract class AbstractAction<A> {
 
     protected Action action;
-    protected A parameters;
+    protected A args;
 
-    public AbstractAction(Action action, A parameters) {
+    public AbstractAction(Action action, A args) {
         this.action = action;
-        this.parameters = parameters;
+        this.args = args;
     }
 
     public Action getAction() {
@@ -15,6 +18,6 @@ public abstract class AbstractAction<A> {
     }
 
     public A getArgs() {
-        return parameters;
+        return args;
     }
 }

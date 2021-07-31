@@ -2,6 +2,7 @@ package com.op.ludo.integrationTest;
 
 import static org.awaitility.Awaitility.await;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.op.ludo.integrationTest.helper.FirebaseTokenProvider;
 import com.op.ludo.integrationTest.helper.JsonStringMessageConverter;
 import java.lang.reflect.Type;
@@ -46,6 +47,7 @@ public class BoardStompClients {
     private final List<UserCredentials> users;
     private final Map<String, BlockingQueue<String>> boardMessages;
     private final Map<String, BlockingQueue<String>> userErrorMessages;
+    private final ObjectMapper objectMapper;
 
     private final FirebaseTokenProvider tokenProvider;
 
@@ -53,7 +55,8 @@ public class BoardStompClients {
             Long boardId,
             List<UserCredentials> users,
             String socketEndpoint,
-            FirebaseTokenProvider tokenProvider)
+            FirebaseTokenProvider tokenProvider,
+            ObjectMapper objectMapper)
             throws ExecutionException, InterruptedException, TimeoutException {
         this.boardId = boardId;
         this.users = users;
@@ -62,6 +65,7 @@ public class BoardStompClients {
         this.boardClients = new ArrayList<>();
         this.boardMessages = new HashMap<>();
         this.userErrorMessages = new HashMap<>();
+        this.objectMapper = objectMapper;
         setUpClients();
     }
 
@@ -108,8 +112,8 @@ public class BoardStompClients {
         session.send(destination, payload);
     }
 
-    public String getMessage(int userIndex, long timeout) {
-        AtomicReference<String> message = new AtomicReference<>();
+    public <T> T getMessage(int userIndex, long timeout, Class<T> targetClass) {
+        AtomicReference<T> message = new AtomicReference<>();
         await().atMost(timeout, TimeUnit.MILLISECONDS)
                 .until(
                         () -> {
@@ -117,14 +121,14 @@ public class BoardStompClients {
                                     boardMessages
                                             .get(users.get(userIndex).getUid())
                                             .poll(100, TimeUnit.MILLISECONDS);
-                            message.set(m);
+                            message.set(objectMapper.readValue(m, targetClass));
                             return m != null;
                         });
         return message.get();
     }
 
-    public String getUserErrorMessage(int userIndex, long timeout) {
-        AtomicReference<String> message = new AtomicReference<>();
+    public <T> T getUserErrorMessage(int userIndex, long timeout, Class<T> targetClass) {
+        AtomicReference<T> message = new AtomicReference<>();
         await().atMost(timeout, TimeUnit.MILLISECONDS)
                 .until(
                         () -> {
@@ -132,7 +136,7 @@ public class BoardStompClients {
                                     userErrorMessages
                                             .get(users.get(userIndex).getUid())
                                             .poll(100, TimeUnit.MILLISECONDS);
-                            message.set(m);
+                            message.set(objectMapper.readValue(m, targetClass));
                             return m != null;
                         });
         return message.get();

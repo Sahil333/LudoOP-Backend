@@ -1,13 +1,16 @@
 package com.op.ludo.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import java.util.List;
 import javax.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
 @Data
 @Entity
 @Table(name = "boardState")
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class BoardState {
 
     @Id @NonNull private Long boardId;
@@ -16,9 +19,9 @@ public class BoardState {
 
     private boolean isEnded;
 
-    @NonNull private Long startTime;
+    @EqualsAndHashCode.Exclude @NonNull private Long startTime;
 
-    @NonNull private Long endTime;
+    @EqualsAndHashCode.Exclude @NonNull private Long endTime;
 
     @NonNull private Integer lastDiceRoll;
 
@@ -26,11 +29,12 @@ public class BoardState {
 
     private boolean isRollPending;
 
-    @NonNull private Long lastActionTime;
+    @EqualsAndHashCode.Exclude @NonNull private Long lastActionTime;
 
     @NonNull private Integer playerCount;
 
     @OneToMany(
+            fetch = FetchType.EAGER,
             mappedBy = "boardState",
             cascade = {CascadeType.ALL})
     private List<PlayerState> players;
@@ -43,7 +47,7 @@ public class BoardState {
 
     @NonNull private Integer bid;
 
-    @NonNull private Long createdTime;
+    @EqualsAndHashCode.Exclude @NonNull private Long createdTime;
 
     public BoardState() {}
 

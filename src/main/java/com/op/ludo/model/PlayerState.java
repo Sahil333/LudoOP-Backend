@@ -1,5 +1,6 @@
 package com.op.ludo.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import javax.persistence.*;
 import lombok.Data;
 import lombok.NonNull;
@@ -10,8 +11,10 @@ import lombok.NonNull;
 public class PlayerState {
     @Id @NonNull private String playerId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @NonNull
+    // ignoring in serialization because of circular reference
+    @JsonIgnore
     private BoardState boardState;
 
     @NonNull private Integer stone1;
