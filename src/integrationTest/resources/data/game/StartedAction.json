@@ -1,0 +1,94 @@
+{
+  "actions": [
+    {
+      "action": "STARTED",
+      "args": {
+        "boardId": 26649474,
+        "byPlayer": "ZW7kvqboqDfTwv9AmH0rPRV4Elf2"
+      }
+    },
+    {
+      "action": "DICEROLLPENDING",
+      "args": {
+        "boardId": 26649474,
+        "playerId": "ZW7kvqboqDfTwv9AmH0rPRV4Elf2",
+        "playerNumber": 1
+      }
+    }
+  ],
+  "board": {
+    "boardId": 26649474,
+    "startTime": 1627726641,
+    "endTime": -1,
+    "lastDiceRoll": -1,
+    "lastActionTime": 1627077344,
+    "playerCount": 4,
+    "players": [
+      {
+        "playerId": "ZW7kvqboqDfTwv9AmH0rPRV4Elf2",
+        "stone1": -11,
+        "stone2": -12,
+        "stone3": -13,
+        "stone4": -14,
+        "turnsMissed": 0,
+        "playerPosition": -1,
+        "homeCount": 0,
+        "playerNumber": 1,
+        "playerType": "human",
+        "stoneTheme": "theme",
+        "playerActive": true
+      },
+      {
+        "playerId": "MDY1QxBZQTRdkaebdnkgRhysXuq1",
+        "stone1": -21,
+        "stone2": -22,
+        "stone3": -23,
+        "stone4": -24,
+        "turnsMissed": 0,
+        "playerPosition": -1,
+        "homeCount": 0,
+        "playerNumber": 2,
+        "playerType": "human",
+        "stoneTheme": "theme",
+        "playerActive": true
+      },
+      {
+        "playerId": "iATGxl2g3rhbhLnsAtQARUlHpdu2",
+        "stone1": -31,
+        "stone2": -32,
+        "stone3": -33,
+        "stone4": -34,
+        "turnsMissed": 0,
+        "playerPosition": -1,
+        "homeCount": 0,
+        "playerNumber": 3,
+        "playerType": "human",
+        "stoneTheme": "theme",
+        "playerActive": true
+      },
+      {
+        "playerId": "pe7K85HmqiaiT5uYRdFqqSKkuEw2",
+        "stone1": -41,
+        "stone2": -42,
+        "stone3": -43,
+        "stone4": -44,
+        "turnsMissed": 0,
+        "playerPosition": -1,
+        "homeCount": 0,
+        "playerNumber": 4,
+        "playerType": "human",
+        "stoneTheme": "theme",
+        "playerActive": true
+      }
+    ],
+    "whoseTurn": 1,
+    "turnTimeLimit": 5,
+    "boardTheme": "random",
+    "bid": 100,
+    "createdTime": 1627077344,
+    "movePending": false,
+    "rollPending": true,
+    "ended": false,
+    "started": true
+  }
+}

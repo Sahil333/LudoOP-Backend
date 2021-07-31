@@ -1,5 +1,7 @@
 package com.op.ludo.integrationTest.helper;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import org.springframework.lang.Nullable;
@@ -12,20 +14,22 @@ import org.springframework.util.MimeType;
 public class JsonStringMessageConverter extends AbstractMessageConverter {
 
     private final Charset defaultCharset;
+    private final ObjectMapper objectMapper;
 
     public JsonStringMessageConverter() {
-        this(StandardCharsets.UTF_8);
+        this(StandardCharsets.UTF_8, AppObjectMapper.objectMapper());
     }
 
-    public JsonStringMessageConverter(Charset defaultCharset) {
-        super(new MimeType("text", "plain", defaultCharset), new MimeType("application", "json"));
+    public JsonStringMessageConverter(Charset defaultCharset, ObjectMapper objectMapper) {
+        super();
         Assert.notNull(defaultCharset, "Default Charset must not be null");
+        this.objectMapper = objectMapper;
         this.defaultCharset = defaultCharset;
     }
 
     @Override
     protected boolean supports(Class<?> clazz) {
-        return (String.class == clazz);
+        return true;
     }
 
     @Override
@@ -42,8 +46,11 @@ public class JsonStringMessageConverter extends AbstractMessageConverter {
             Object payload, @Nullable MessageHeaders headers, @Nullable Object conversionHint) {
 
         if (byte[].class == getSerializedPayloadClass()) {
-            Charset charset = getContentTypeCharset(getMimeType(headers));
-            payload = ((String) payload).getBytes(charset);
+            try {
+                payload = objectMapper.writeValueAsBytes(payload);
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+            }
         }
         return payload;
     }

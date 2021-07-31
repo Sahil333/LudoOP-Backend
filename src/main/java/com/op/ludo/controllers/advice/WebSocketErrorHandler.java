@@ -4,6 +4,7 @@ import com.op.ludo.util.DateTimeUtil;
 import java.time.ZonedDateTime;
 import java.util.Map;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Value;
 import org.springframework.messaging.handler.annotation.Headers;
 import org.springframework.messaging.handler.annotation.MessageExceptionHandler;
@@ -37,10 +38,11 @@ public class WebSocketErrorHandler {
 
     @Value
     @Builder
+    @EqualsAndHashCode
     public static class GameErrorResponse {
         String message;
         String details;
         String destination;
-        ZonedDateTime dateTime;
+        @EqualsAndHashCode.Exclude ZonedDateTime dateTime;
     }
 }

@@ -3,7 +3,10 @@ package com.op.ludo.integrationTest;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
+import com.op.ludo.controllers.dto.websocket.ActionsWithBoardState;
+import com.op.ludo.controllers.dto.websocket.GameStartDto;
 import com.op.ludo.dao.BoardStateRepo;
+import com.op.ludo.integrationTest.helper.AppObjectMapper;
 import com.op.ludo.integrationTest.helper.DataReader;
 import com.op.ludo.integrationTest.helper.FirebaseTokenProvider;
 import com.op.ludo.model.BoardState;
@@ -50,7 +53,11 @@ public class GameStartTest {
         String endpoint = String.format(socketEndpoint, port);
         boardClients =
                 new BoardStompClients(
-                        boardState.getBoardId(), credentials, endpoint, tokenProvider);
+                        boardState.getBoardId(),
+                        credentials,
+                        endpoint,
+                        tokenProvider,
+                        AppObjectMapper.objectMapper());
         // To let all subscription to be finished first, sleep
         Thread.sleep(500L);
 
@@ -58,24 +65,24 @@ public class GameStartTest {
         StompHeaders headers = new StompHeaders();
         headers.add("boardId", String.valueOf(boardState.getBoardId()));
         headers.add("destination", "/app/game/action/start");
-        boardClients.send(headers, null, 0);
+        boardClients.send(headers, new GameStartDto(boardState.getBoardId()), 0);
 
         // verify
-        String expectedAction = DataReader.getStartedAction();
+        ActionsWithBoardState expectedAction = DataReader.getStartedAction();
         // user1
-        String action = boardClients.getMessage(0, 300);
+        ActionsWithBoardState action = boardClients.getMessage(0, 300, ActionsWithBoardState.class);
         assertThat(action, equalTo(expectedAction));
 
         // user2
-        action = boardClients.getMessage(1, 300);
+        action = boardClients.getMessage(1, 300, ActionsWithBoardState.class);
         assertThat(action, equalTo(expectedAction));
 
         // user3
-        action = boardClients.getMessage(2, 300);
+        action = boardClients.getMessage(2, 300, ActionsWithBoardState.class);
         assertThat(action, equalTo(expectedAction));
 
         // user4
-        action = boardClients.getMessage(3, 300);
+        action = boardClients.getMessage(3, 300, ActionsWithBoardState.class);
         assertThat(action, equalTo(expectedAction));
 
         Optional<BoardState> boardStateActual = boardStateRepo.findById(boardState.getBoardId());

@@ -3,6 +3,7 @@ package com.op.ludo.service;
 import com.op.ludo.controllers.dto.BoardRequest;
 import com.op.ludo.dao.BoardStateRepo;
 import com.op.ludo.dao.PlayerStateRepo;
+import com.op.ludo.exceptions.BoardNotFoundException;
 import com.op.ludo.exceptions.InvalidBoardRequest;
 import com.op.ludo.helper.LobbyHelper;
 import com.op.ludo.model.BoardState;
@@ -92,6 +93,12 @@ public class LobbyService {
                 throw new InvalidBoardRequest(
                         "boardType=" + request.getType() + "is not supported");
         }
+    }
+
+    public BoardState getBoardState(Long boardId) {
+        return boardStateRepo
+                .findById(boardId)
+                .orElseThrow(() -> new BoardNotFoundException("boardId=" + boardId + " not found"));
     }
 
     private Boolean canCreateLobby(Integer bid, String playerId) {

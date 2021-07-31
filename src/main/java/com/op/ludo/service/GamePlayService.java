@@ -2,14 +2,17 @@ package com.op.ludo.service;
 
 import com.op.ludo.dao.BoardStateRepo;
 import com.op.ludo.dao.PlayerStateRepo;
+import com.op.ludo.exceptions.BoardNotFoundException;
 import com.op.ludo.exceptions.InvalidPlayerMoveException;
 import com.op.ludo.game.action.AbstractAction;
 import com.op.ludo.game.action.impl.*;
 import com.op.ludo.helper.LobbyHelper;
 import com.op.ludo.model.BoardState;
 import com.op.ludo.model.PlayerState;
+import com.op.ludo.util.DateTimeUtil;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
@@ -27,6 +30,54 @@ public class GamePlayService {
     @Autowired PlayerStateRepo playerStateRepo;
 
     @Autowired BoardStateRepo boardStateRepo;
+
+    public List<AbstractAction> startGame(Long boardId, String playerId) {
+        List<AbstractAction> actions = new ArrayList<>();
+        Optional<BoardState> boardOptional = boardStateRepo.findById(boardId);
+        if (boardOptional.isEmpty()) {
+            throw new BoardNotFoundException("boardId=" + boardId + " not found");
+        }
+        BoardState board = boardOptional.get();
+        if (canStartGame(playerId, board)) {
+            doStartGame(board);
+            actions.add(new GameStarted(boardId, playerId));
+            AbstractAction playerTurn =
+                    new DiceRollPending(
+                            boardId,
+                            getPlayerId(board, board.getWhoseTurn()),
+                            board.getWhoseTurn());
+            actions.add(playerTurn);
+            board.setRollPending(true);
+            board.setMovePending(false);
+            boardStateRepo.save(board);
+        }
+        return actions;
+    }
+
+    private String getPlayerId(BoardState boardState, Integer playerNumber) {
+        List<PlayerState> players = boardState.getPlayers();
+        for (PlayerState player : players) {
+            if (player.getPlayerNumber().equals(playerNumber)) return player.getPlayerId();
+        }
+        return null;
+    }
+
+    private void doStartGame(BoardState boardState) {
+        boardState.setStartTime(DateTimeUtil.nowEpoch());
+        boardState.setStarted(true);
+    }
+
+    private boolean canStartGame(String playerId, BoardState board) {
+        return !board.isStarted() && isPlayerInGame(playerId, board);
+    }
+
+    public boolean isPlayerInGame(String playerId, BoardState board) {
+        Optional<PlayerState> player =
+                board.getPlayers().stream()
+                        .filter(p -> p.getPlayerId().equals(playerId))
+                        .findFirst();
+        return player.isPresent();
+    }
 
     public List<AbstractAction> rollDiceForPlayer(DiceRollReq diceRollReq) {
         List<AbstractAction> actionList = new ArrayList<>();
