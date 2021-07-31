@@ -4,6 +4,7 @@ import com.op.ludo.model.BoardState;
 import com.op.ludo.model.PlayerQueue;
 import com.op.ludo.model.PlayerState;
 import com.op.ludo.util.DateTimeUtil;
+import java.util.Random;
 
 public class LobbyHelper {
 
@@ -57,5 +58,10 @@ public class LobbyHelper {
         long currentTime = DateTimeUtil.nowEpoch();
         PlayerQueue playerQueue = new PlayerQueue(playerId, currentTime);
         return playerQueue;
+    }
+
+    public static Integer getRandomNumberInRange(Integer min, Integer max) {
+        Random random = new Random();
+        return random.nextInt(max - min + 1) + 1;
     }
 }
