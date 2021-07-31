@@ -11,6 +11,7 @@ import com.op.ludo.game.action.AbstractAction;
 import com.op.ludo.game.action.Action;
 import com.op.ludo.game.action.impl.DiceRollPending;
 import com.op.ludo.game.action.impl.GameStarted;
+import com.op.ludo.game.action.impl.StoneMove;
 import java.io.IOException;
 import java.util.Objects;
 
@@ -31,6 +32,9 @@ public class AbstractActionDeserializer extends StdDeserializer<AbstractAction> 
         } else if (Objects.equals(
                 ((TextNode) node.get("action")).textValue(), Action.DICEROLLPENDING.toString())) {
             return jsonParser.getCodec().treeToValue(node, DiceRollPending.class);
+        } else if (Objects.equals(
+                ((TextNode) node.get("action")).textValue(), Action.STONEMOVE.toString())) {
+            return jsonParser.getCodec().treeToValue(node, StoneMove.class);
         } else {
             throw new JsonParseException(
                     jsonParser,

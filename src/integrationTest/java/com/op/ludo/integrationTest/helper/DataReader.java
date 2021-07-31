@@ -80,4 +80,9 @@ public class DataReader {
                 "src/integrationTest/resources/data/game/StartedAction.json",
                 ActionsWithBoardState.class);
     }
+
+    public static BoardState getStartedBoard() {
+        return getResource(
+                "src/integrationTest/resources/data/game/BoardStartedState.json", BoardState.class);
+    }
 }

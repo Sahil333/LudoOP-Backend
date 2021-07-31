@@ -106,6 +106,10 @@ public class GamePlayService {
 
     public List<AbstractAction> updateBoardWithStoneMove(StoneMove stoneMove) {
         List<AbstractAction> actionList = new ArrayList<AbstractAction>();
+        if (!isStoneMoveValid(stoneMove)) {
+            throw new InvalidPlayerMoveException("Stone move is not valid");
+        }
+        actionList.add(stoneMove);
         if (!(isSafePosition(stoneMove.getArgs().getFinalPosition())
                 || getFinalPositionStoneCount(stoneMove) != 1)) {
             StoneMove cutStoneMove = getFinalPositionCutStoneMove(stoneMove);
@@ -190,33 +194,30 @@ public class GamePlayService {
                 finalPosition);
     }
 
-    public Boolean isStoneMoveValid(
-            Long boardId,
-            String playerId,
-            Integer stoneNumber,
-            Integer initialPosition,
-            Integer finalPosition)
-            throws InvalidPlayerMoveException {
-        if (!lobbyService.isPlayerAlreadyPartOfGame(playerId)) {
+    public Boolean isStoneMoveValid(StoneMove stoneMove) throws InvalidPlayerMoveException {
+        if (!lobbyService.isPlayerAlreadyPartOfGame(stoneMove.getArgs().getPlayerId())) {
             throw new InvalidPlayerMoveException("Player is not part of the game.");
-        } else if (stoneNumber < 1 || stoneNumber > 4) {
+        } else if (stoneMove.getArgs().getStoneNumber() < 1
+                || stoneMove.getArgs().getStoneNumber() > 4) {
             throw new InvalidPlayerMoveException("Invalid stone number.");
         }
-        PlayerState playerState = em.getReference(PlayerState.class, playerId);
+        PlayerState playerState =
+                em.getReference(PlayerState.class, stoneMove.getArgs().getPlayerId());
         BoardState boardState = playerState.getBoardState();
-        Integer currentDBPosition = getDatabaseStonePosition(playerState, stoneNumber);
-        if (playerState.getPlayerNumber() != boardState.getWhoseTurn()
+        Integer currentDBPosition =
+                getDatabaseStonePosition(playerState, stoneMove.getArgs().getStoneNumber());
+        if (!playerState.getPlayerNumber().equals(boardState.getWhoseTurn())
                 || !boardState.isMovePending()
-                || boardState.getBoardId() != boardId) {
+                || !boardState.getBoardId().equals(stoneMove.getArgs().getBoardId())) {
             throw new InvalidPlayerMoveException("Turn not valid.");
-        } else if (currentDBPosition != initialPosition) {
+        } else if (!currentDBPosition.equals(stoneMove.getArgs().getInitialPosition())) {
             throw new InvalidPlayerMoveException("Invalid initial position");
         }
         return getNewStonePosition(
                         currentDBPosition,
                         boardState.getLastDiceRoll(),
                         playerState.getPlayerNumber())
-                == finalPosition;
+                .equals(stoneMove.getArgs().getFinalPosition());
     }
 
     private List<Integer> moveableStoneList(PlayerState playerState, BoardState boardState) {
@@ -267,7 +268,7 @@ public class GamePlayService {
         BoardState boardState = em.getReference(BoardState.class, stoneMove.getArgs().getBoardId());
         List<PlayerState> playerStates = boardState.getPlayers();
         for (PlayerState playerState : playerStates) {
-            if (playerState.getStone1() == stoneMove.getArgs().getFinalPosition()) {
+            if (playerState.getStone1().equals(stoneMove.getArgs().getFinalPosition())) {
                 return new StoneMove(
                         stoneMove.getArgs().getBoardId(),
                         playerState.getPlayerId(),
@@ -275,7 +276,7 @@ public class GamePlayService {
                         playerState.getStone1(),
                         getStoneBaseValue(playerState.getPlayerNumber(), 1));
             }
-            if (playerState.getStone2() == stoneMove.getArgs().getFinalPosition()) {
+            if (playerState.getStone2().equals(stoneMove.getArgs().getFinalPosition())) {
                 return new StoneMove(
                         stoneMove.getArgs().getBoardId(),
                         playerState.getPlayerId(),
@@ -283,7 +284,7 @@ public class GamePlayService {
                         playerState.getStone1(),
                         getStoneBaseValue(playerState.getPlayerNumber(), 2));
             }
-            if (playerState.getStone3() == stoneMove.getArgs().getFinalPosition()) {
+            if (playerState.getStone3().equals(stoneMove.getArgs().getFinalPosition())) {
                 return new StoneMove(
                         stoneMove.getArgs().getBoardId(),
                         playerState.getPlayerId(),
@@ -291,7 +292,7 @@ public class GamePlayService {
                         playerState.getStone1(),
                         getStoneBaseValue(playerState.getPlayerNumber(), 3));
             }
-            if (playerState.getStone4() == stoneMove.getArgs().getFinalPosition()) {
+            if (playerState.getStone4().equals(stoneMove.getArgs().getFinalPosition())) {
                 return new StoneMove(
                         stoneMove.getArgs().getBoardId(),
                         playerState.getPlayerId(),
@@ -338,19 +339,19 @@ public class GamePlayService {
         List<PlayerState> playerStates = boardState.getPlayers();
         Integer count = 0;
         for (PlayerState playerState : playerStates) {
-            if (playerState.getPlayerId() == stoneMove.getArgs().getPlayerId()) {
+            if (playerState.getPlayerId().equals(stoneMove.getArgs().getPlayerId())) {
                 continue;
             }
-            if (playerState.getStone1() == stoneMove.getArgs().getFinalPosition()) {
+            if (playerState.getStone1().equals(stoneMove.getArgs().getFinalPosition())) {
                 count++;
             }
-            if (playerState.getStone2() == stoneMove.getArgs().getFinalPosition()) {
+            if (playerState.getStone2().equals(stoneMove.getArgs().getFinalPosition())) {
                 count++;
             }
-            if (playerState.getStone3() == stoneMove.getArgs().getFinalPosition()) {
+            if (playerState.getStone3().equals(stoneMove.getArgs().getFinalPosition())) {
                 count++;
             }
-            if (playerState.getStone4() == stoneMove.getArgs().getFinalPosition()) {
+            if (playerState.getStone4().equals(stoneMove.getArgs().getFinalPosition())) {
                 count++;
             }
         }

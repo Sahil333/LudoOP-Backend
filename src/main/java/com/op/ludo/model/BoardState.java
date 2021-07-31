@@ -1,5 +1,6 @@
 package com.op.ludo.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import java.util.List;
 import javax.persistence.*;
@@ -82,5 +83,16 @@ public class BoardState {
         this.boardTheme = boardTheme;
         this.bid = bid;
         this.createdTime = createdTime;
+    }
+
+    @JsonIgnore
+    public PlayerState getPlayerState(Integer playerNumber) {
+        return getPlayers().stream()
+                .filter(playerState -> playerState.getPlayerNumber().equals(playerNumber))
+                .findFirst()
+                .orElseThrow(
+                        () ->
+                                new IllegalArgumentException(
+                                        "No player found with player number=" + playerNumber));
     }
 }

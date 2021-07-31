@@ -1,20 +1,37 @@
 package com.op.ludo.game.action.impl;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.op.ludo.game.action.AbstractAction;
 import com.op.ludo.game.action.Action;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import org.springframework.util.Assert;
 
+@EqualsAndHashCode(callSuper = true)
 public class DiceRoll extends AbstractAction<DiceRoll.DiceRollArgs> {
 
     public DiceRoll(String playerId, Long boardId) {
-        super(Action.DICEROLL, new DiceRollArgs(playerId, boardId));
+        this(Action.DICEROLL, new DiceRollArgs(playerId, boardId));
     }
 
+    @JsonCreator
+    public DiceRoll(
+            @JsonProperty("action") Action action, @JsonProperty("args") DiceRollArgs args) {
+        super(action, args);
+        Assert.isTrue(Action.DICEROLL.equals(action), "Action should be DICEROLL");
+    }
+
+    @Getter
+    @EqualsAndHashCode
     public static class DiceRollArgs {
         private final Long boardId;
         private final String playerId;
         private final Integer diceRoll;
 
-        public DiceRollArgs(String playerId, Long boardId) {
+        @JsonCreator
+        public DiceRollArgs(
+                @JsonProperty("playerId") String playerId, @JsonProperty("boardId") Long boardId) {
             this.playerId = playerId;
             this.boardId = boardId;
             this.diceRoll = diceRollGenerator();
