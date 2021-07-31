@@ -58,5 +58,10 @@ public class StoneMoveTests extends BaseIntegrationTest {
         assertThat(boardState.isMovePending(), equalTo(false));
         assertThat(boardState.getWhoseTurn(), equalTo(1));
         assertThat(boardState.getPlayerState(1).getStone3(), equalTo(1));
+
+        assertThat(actions.getBoard().isRollPending(), equalTo(true));
+        assertThat(actions.getBoard().isMovePending(), equalTo(false));
+        assertThat(actions.getBoard().getWhoseTurn(), equalTo(1));
+        assertThat(actions.getBoard().getPlayerState(1).getStone3(), equalTo(1));
     }
 }
