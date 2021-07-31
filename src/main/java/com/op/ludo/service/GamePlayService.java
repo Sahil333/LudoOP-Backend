@@ -107,7 +107,8 @@ public class GamePlayService {
     public List<AbstractAction> updateBoardWithStoneMove(StoneMove stoneMove) {
         List<AbstractAction> actionList = new ArrayList<AbstractAction>();
         if (!isStoneMoveValid(stoneMove)) {
-            throw new InvalidPlayerMoveException("Stone move is not valid");
+            throw new InvalidPlayerMoveException(
+                    "Move is not valid for stone=" + stoneMove.getArgs().getStoneNumber());
         }
         actionList.add(stoneMove);
         if (!(isSafePosition(stoneMove.getArgs().getFinalPosition())
