@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.List;
 import javax.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Service;
 
@@ -15,13 +16,16 @@ import org.springframework.stereotype.Service;
 @Transactional
 public class TimerService {
 
-    @Autowired BoardStateRepo boardStateRepo;
+    @Value("${gameconfig.enable-timer}")
+    private Boolean enableTimer;
 
-    @Autowired ThreadPoolTaskScheduler threadPoolTaskScheduler;
+    @Autowired private BoardStateRepo boardStateRepo;
 
-    @Autowired GamePlayService gamePlayService;
+    @Autowired private ThreadPoolTaskScheduler threadPoolTaskScheduler;
 
-    @Autowired CommunicationService communicationService;
+    @Autowired private GamePlayService gamePlayService;
+
+    @Autowired private CommunicationService communicationService;
 
     private class TimerAction implements Runnable {
         Long boardId;
@@ -36,7 +40,7 @@ public class TimerService {
 
         @Override
         public void run() {
-            actionMissedHandler(this.boardId, this.playerId, this.actionTime);
+            if (enableTimer) actionMissedHandler(this.boardId, this.playerId, this.actionTime);
         }
     }
 

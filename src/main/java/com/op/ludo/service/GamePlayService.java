@@ -3,6 +3,7 @@ package com.op.ludo.service;
 import com.op.ludo.dao.BoardStateRepo;
 import com.op.ludo.dao.PlayerStateRepo;
 import com.op.ludo.exceptions.BoardNotFoundException;
+import com.op.ludo.exceptions.InvalidBoardRequest;
 import com.op.ludo.exceptions.InvalidPlayerMoveException;
 import com.op.ludo.game.action.AbstractAction;
 import com.op.ludo.game.action.impl.*;
@@ -31,6 +32,8 @@ public class GamePlayService {
 
     @Autowired BoardStateRepo boardStateRepo;
 
+    @Autowired TimerService timerService;
+
     public List<AbstractAction> startGame(Long boardId, String playerId) {
         List<AbstractAction> actions = new ArrayList<>();
         Optional<BoardState> boardOptional = boardStateRepo.findById(boardId);
@@ -51,7 +54,9 @@ public class GamePlayService {
     }
 
     private void doStartGame(BoardState boardState) {
-        boardState.setStartTime(DateTimeUtil.nowEpoch());
+        Long startTime = DateTimeUtil.nowEpoch();
+        boardState.setStartTime(startTime);
+        boardState.setLastActionTime(startTime);
         boardState.setStarted(true);
     }
 
@@ -80,7 +85,11 @@ public class GamePlayService {
                         diceRollReq.getArgs().getPlayerId(), diceRollReq.getArgs().getBoardId());
         boardState.setLastDiceRoll(diceRoll.getArgs().getDiceRoll());
         boardState.setRollPending(false);
-        boardState.setMovePending(true);
+        boardState.setMovePending(true); // whose turn won't be updated here as it will remain same
+        Long actionTime = DateTimeUtil.nowEpoch();
+        boardState.setLastActionTime(actionTime);
+        timerService.scheduleActionCheck(
+                boardState.getBoardId(), playerState.getPlayerId(), actionTime);
         boardStateRepo.save(boardState);
         actionList.add(diceRoll);
         StoneMovePending stoneMovePending =
@@ -112,31 +121,34 @@ public class GamePlayService {
         boardState.setRollPending(true);
         boardState.setMovePending(false);
         DiceRollPending diceRollPending;
+        String diceRollPlayerId;
         if (boardState.getLastDiceRoll() == 6 || hasCutStone) {
+            diceRollPlayerId = playerState.getPlayerId();
             diceRollPending =
                     new DiceRollPending(
                             stoneMove.getArgs().getBoardId(), stoneMove.getArgs().getPlayerId());
         } else {
             PlayerState nextPlayer = getNextPlayer(playerState, boardState);
+            diceRollPlayerId = nextPlayer.getPlayerId();
             diceRollPending =
                     new DiceRollPending(boardState.getBoardId(), nextPlayer.getPlayerId());
             boardState.setWhoseTurn(nextPlayer.getPlayerId());
         }
+        Long actionTime = DateTimeUtil.nowEpoch();
+        boardState.setLastActionTime(actionTime);
+        boardState.setWhoseTurn(diceRollPlayerId);
+        timerService.scheduleActionCheck(boardState.getBoardId(), diceRollPlayerId, actionTime);
         actionList.add(diceRollPending);
         boardStateRepo.save(boardState);
         return actionList;
     }
 
-    @Transactional(value = Transactional.TxType.REQUIRES_NEW)
-    public void blockAllBoardMoves(BoardState boardState) {
-        boardState.setMovePending(false);
-        boardState.setRollPending(false);
-        boardStateRepo.save(boardState);
-    }
-
     public List<AbstractAction> missedDiceRollHandler(Long boardId, String playerId) {
-        List<AbstractAction> actionList = new ArrayList<>();
-        return actionList;
+        DiceRollReq diceRollReq = new DiceRollReq(boardId, playerId);
+        PlayerState playerState = em.getReference(PlayerState.class, playerId);
+        playerState.setTurnsMissed(playerState.getTurnsMissed() + 1);
+        playerStateRepo.save(playerState);
+        return rollDiceForPlayer(diceRollReq);
     }
 
     public List<AbstractAction> missedTurnHandler(Long boardId, String playerId) {
@@ -149,14 +161,24 @@ public class GamePlayService {
             DiceRollPending diceRollPending =
                     new DiceRollPending(boardState.getBoardId(), nextPlayer.getPlayerId());
             actionList.add(diceRollPending);
-            return actionList;
+            boardState.setRollPending(true);
+            boardState.setMovePending(false);
+            Long actionTime = DateTimeUtil.nowEpoch();
+            boardState.setLastActionTime(actionTime);
+            boardState.setWhoseTurn(nextPlayer.getPlayerId());
+            timerService.scheduleActionCheck(
+                    boardState.getBoardId(), nextPlayer.getPlayerId(), actionTime);
+        } else {
+            Integer moveRandomStoneNumber =
+                    LobbyHelper.getRandomNumberInRange(0, movableStones.size() - 1);
+            StoneMove randomStoneMove =
+                    getNewStoneMove(
+                            playerState, boardState, movableStones.get(moveRandomStoneNumber));
+            actionList.addAll(updateBoardWithStoneMove(randomStoneMove));
         }
-        Integer moveRandomStoneNumber =
-                LobbyHelper.getRandomNumberInRange(0, movableStones.size() - 1);
-        StoneMove randomStoneMove =
-                getNewStoneMove(playerState, boardState, movableStones.get(moveRandomStoneNumber));
-        actionList.add(randomStoneMove);
-        actionList.addAll(updateBoardWithStoneMove(randomStoneMove));
+        playerState.setTurnsMissed(playerState.getTurnsMissed() + 1);
+        playerStateRepo.save(playerState);
+        boardStateRepo.save(boardState);
         return actionList;
     }
 
@@ -233,13 +255,20 @@ public class GamePlayService {
         for (int i = 0; i < playerStateList.size(); i++) {
             if (playerStateList.get(i).equals(currentPlayer)) {
                 index = i;
+                index++;
+                break;
             }
         }
-        if (index < playerStateList.size() - 1) {
-            return playerStateList.get(index + 1);
-        } else {
-            return playerStateList.get(0);
+        while (!playerStateList.get(index).equals(currentPlayer)) {
+            if (index < playerStateList.size() && playerStateList.get(index).isPlayerActive()) {
+                return playerStateList.get(index);
+            } else if (index >= playerStateList.size()) {
+                index = 0;
+            } else {
+                index++;
+            }
         }
+        throw new InvalidBoardRequest("Player not found");
     }
 
     private void updateStoneMoveInDB(StoneMove stoneMove) {
@@ -429,5 +458,12 @@ public class GamePlayService {
             return playerState.getStone3();
         }
         return playerState.getStone4();
+    }
+
+    @Transactional(value = Transactional.TxType.REQUIRES_NEW)
+    public void blockAllBoardMoves(BoardState boardState) {
+        boardState.setMovePending(false);
+        boardState.setRollPending(false);
+        boardStateRepo.save(boardState);
     }
 }
