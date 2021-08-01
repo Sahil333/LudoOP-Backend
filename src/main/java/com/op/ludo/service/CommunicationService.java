@@ -1,6 +1,8 @@
 package com.op.ludo.service;
 
+import com.op.ludo.controllers.dto.converters.BoardStateToBoardDto;
 import com.op.ludo.controllers.dto.websocket.ActionsWithBoardState;
+import com.op.ludo.controllers.dto.websocket.BoardDto;
 import com.op.ludo.game.action.AbstractAction;
 import com.op.ludo.model.BoardState;
 import java.util.List;
@@ -19,8 +21,9 @@ public class CommunicationService {
     public void sendActions(Long boardId, List<AbstractAction> actions) {
         if (!CollectionUtils.isEmpty(actions)) {
             BoardState board = lobbyService.getBoardState(boardId);
+            BoardDto boardDto = BoardStateToBoardDto.convertToDto(board);
             messagingTemplate.convertAndSend(
-                    "/topic/game/" + boardId, new ActionsWithBoardState(actions, board));
+                    "/topic/game/" + boardId, new ActionsWithBoardState(actions, boardDto));
         }
     }
 }

@@ -6,6 +6,7 @@ import com.op.ludo.game.action.AbstractAction;
 import com.op.ludo.game.action.Action;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.ToString;
 import org.springframework.util.Assert;
 
 @EqualsAndHashCode(callSuper = true)
@@ -24,6 +25,7 @@ public class GameStarted extends AbstractAction<GameStarted.GameStartArgs> {
 
     @EqualsAndHashCode
     @Getter
+    @ToString
     public static class GameStartArgs {
 
         private final Long boardId;

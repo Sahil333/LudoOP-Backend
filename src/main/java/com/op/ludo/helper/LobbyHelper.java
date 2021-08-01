@@ -8,7 +8,7 @@ import java.util.Random;
 
 public class LobbyHelper {
 
-    public static BoardState initializeNewBoard(Long boardId) {
+    public static BoardState initializeNewBoard(Long boardId, String playerId) {
         long currentTime = DateTimeUtil.nowEpoch();
         BoardState boardState =
                 new BoardState(
@@ -22,7 +22,7 @@ public class LobbyHelper {
                         false,
                         currentTime,
                         0,
-                        1,
+                        playerId,
                         5,
                         "random",
                         100,

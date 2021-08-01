@@ -6,13 +6,14 @@ import com.op.ludo.game.action.AbstractAction;
 import com.op.ludo.game.action.Action;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.ToString;
 import org.springframework.util.Assert;
 
 @EqualsAndHashCode(callSuper = true)
 public class DiceRollPending extends AbstractAction<DiceRollPending.DiceRollPendingArgs> {
 
-    public DiceRollPending(Long boardId, String playerId, Integer playerNumber) {
-        this(Action.DICEROLLPENDING, new DiceRollPendingArgs(boardId, playerId, playerNumber));
+    public DiceRollPending(Long boardId, String playerId) {
+        this(Action.DICEROLLPENDING, new DiceRollPendingArgs(boardId, playerId));
     }
 
     @JsonCreator
@@ -24,19 +25,16 @@ public class DiceRollPending extends AbstractAction<DiceRollPending.DiceRollPend
 
     @Getter
     @EqualsAndHashCode
+    @ToString
     public static class DiceRollPendingArgs {
         private final Long boardId;
         private final String playerId;
-        private final Integer playerNumber;
 
         @JsonCreator
         public DiceRollPendingArgs(
-                @JsonProperty("boardId") Long boardId,
-                @JsonProperty("playerId") String playerId,
-                @JsonProperty("playerNumber") Integer playerNumber) {
+                @JsonProperty("boardId") Long boardId, @JsonProperty("playerId") String playerId) {
             this.boardId = boardId;
             this.playerId = playerId;
-            this.playerNumber = playerNumber;
         }
     }
 }

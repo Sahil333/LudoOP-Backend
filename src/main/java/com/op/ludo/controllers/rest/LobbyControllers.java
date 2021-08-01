@@ -1,9 +1,9 @@
 package com.op.ludo.controllers.rest;
 
 import com.op.ludo.auth.facade.IAuthenticationFacade;
-import com.op.ludo.controllers.dto.Board;
-import com.op.ludo.controllers.dto.BoardRequest;
-import com.op.ludo.controllers.dto.JoinBoard;
+import com.op.ludo.controllers.dto.JoinLobby;
+import com.op.ludo.controllers.dto.Lobby;
+import com.op.ludo.controllers.dto.LobbyRequest;
 import com.op.ludo.exceptions.InvalidBoardRequest;
 import com.op.ludo.game.action.AbstractAction;
 import com.op.ludo.model.BoardState;
@@ -34,24 +34,24 @@ public class LobbyControllers {
     @Autowired GamePlayService gamePlayService;
 
     @PostMapping(value = "lobby/friend/create")
-    public Board createFriendLobby(@RequestBody BoardRequest request) {
-        if (!request.getType().equals(BoardRequest.Type.FRIEND)) {
+    public Lobby createFriendLobby(@RequestBody LobbyRequest request) {
+        if (!request.getType().equals(LobbyRequest.Type.FRIEND)) {
             throw new InvalidBoardRequest("Invalid board type in request");
         }
         request.setPlayerId(auth.getPrincipal().getUsername());
         BoardState boardState = lobbyService.handleBoardRequest(request);
-        return new Board(boardState.getBoardId());
+        return new Lobby(boardState.getBoardId());
     }
 
     @PostMapping(value = "lobby/friend/join")
-    public void joinFriendLobby(@RequestBody JoinBoard joinBoard, HttpServletResponse response) {
-        lobbyService.joinBoard(auth.getPrincipal().getUsername(), joinBoard.getBoardId());
+    public void joinFriendLobby(@RequestBody JoinLobby joinLobby, HttpServletResponse response) {
+        lobbyService.joinBoard(auth.getPrincipal().getUsername(), joinLobby.getBoardId());
         response.setStatus(HttpStatus.NO_CONTENT.value());
     }
 
     @PostMapping(value = "lobby/online/join")
-    public void joinOnlineLobby(@RequestBody BoardRequest request, HttpServletResponse response) {
-        if (!request.getType().equals(BoardRequest.Type.ONLINE)) {
+    public void joinOnlineLobby(@RequestBody LobbyRequest request, HttpServletResponse response) {
+        if (!request.getType().equals(LobbyRequest.Type.ONLINE)) {
             throw new InvalidBoardRequest("Invalid board type in request");
         }
         request.setPlayerId(auth.getPrincipal().getUsername());
@@ -60,7 +60,7 @@ public class LobbyControllers {
     }
 
     @GetMapping(value = "lobby/poll")
-    public Board lobbyOnlineStatus(HttpServletResponse response) {
+    public Lobby lobbyOnlineStatus(HttpServletResponse response) {
         String playerId = auth.getPrincipal().getUsername();
         if (playerQueueService.isPlayerInQueue(playerId)) {
             //  setting the status PROCESSING will make the client to wait further response
@@ -68,7 +68,7 @@ public class LobbyControllers {
             response.setStatus(HttpStatus.NO_CONTENT.value());
         } else if (lobbyService.isPlayerAlreadyPartOfGame(playerId)) {
             BoardState boardState = lobbyService.getCurrentActiveGame(playerId);
-            return new Board(boardState.getBoardId());
+            return new Lobby(boardState.getBoardId());
         } else {
             throw new IllegalArgumentException(
                     "playerId=" + playerId + " is not part of the queue");

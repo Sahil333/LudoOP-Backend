@@ -102,6 +102,10 @@ public class BoardStompClients {
                 "/user/queue/errors", new GameErrorStompFrameHandler(token.get("localId")));
     }
 
+    public String getPlayerId(int userIndex) {
+        return users.get(userIndex).getUid();
+    }
+
     public void send(StompHeaders headers, Object payload, int userIndex) {
         StompSession session = this.boardClients.get(userIndex);
         session.send(headers, payload);
@@ -121,7 +125,7 @@ public class BoardStompClients {
                                     boardMessages
                                             .get(users.get(userIndex).getUid())
                                             .poll(100, TimeUnit.MILLISECONDS);
-                            message.set(objectMapper.readValue(m, targetClass));
+                            if (m != null) message.set(objectMapper.readValue(m, targetClass));
                             return m != null;
                         });
         return message.get();
@@ -136,7 +140,7 @@ public class BoardStompClients {
                                     userErrorMessages
                                             .get(users.get(userIndex).getUid())
                                             .poll(100, TimeUnit.MILLISECONDS);
-                            message.set(objectMapper.readValue(m, targetClass));
+                            if (m != null) message.set(objectMapper.readValue(m, targetClass));
                             return m != null;
                         });
         return message.get();

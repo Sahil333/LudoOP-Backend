@@ -1,8 +1,15 @@
 package com.op.ludo.game.action.impl;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.op.ludo.game.action.AbstractAction;
 import com.op.ludo.game.action.Action;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
+import org.springframework.util.Assert;
 
+@EqualsAndHashCode(callSuper = true)
 public class StoneMove extends AbstractAction<StoneMove.StoneMoveArgs> {
 
     public StoneMove(
@@ -11,11 +18,21 @@ public class StoneMove extends AbstractAction<StoneMove.StoneMoveArgs> {
             Integer stoneNumber,
             Integer initialPosition,
             Integer finalPosition) {
-        super(
+        this(
                 Action.STONEMOVE,
                 new StoneMoveArgs(boardId, playerId, stoneNumber, initialPosition, finalPosition));
     }
 
+    @JsonCreator
+    public StoneMove(
+            @JsonProperty("action") Action action, @JsonProperty("args") StoneMoveArgs args) {
+        super(action, args);
+        Assert.isTrue(Action.STONEMOVE.equals(action), "Action should be STONEMOVE");
+    }
+
+    @Getter
+    @EqualsAndHashCode
+    @ToString
     public static class StoneMoveArgs {
         private final Long boardId;
         private final String playerId;
@@ -23,37 +40,18 @@ public class StoneMove extends AbstractAction<StoneMove.StoneMoveArgs> {
         private final Integer initialPosition;
         private final Integer finalPosition;
 
+        @JsonCreator
         StoneMoveArgs(
-                Long boardId,
-                String playerId,
-                Integer stoneNumber,
-                Integer initialPosition,
-                Integer finalPosition) {
+                @JsonProperty("boardId") Long boardId,
+                @JsonProperty("playerId") String playerId,
+                @JsonProperty("stoneMove") Integer stoneNumber,
+                @JsonProperty("initialPosition") Integer initialPosition,
+                @JsonProperty("finalPosition") Integer finalPosition) {
             this.boardId = boardId;
             this.playerId = playerId;
             this.stoneNumber = stoneNumber;
             this.initialPosition = initialPosition;
             this.finalPosition = finalPosition;
-        }
-
-        public Long getBoardId() {
-            return boardId;
-        }
-
-        public String getPlayerId() {
-            return playerId;
-        }
-
-        public Integer getStoneNumber() {
-            return stoneNumber;
-        }
-
-        public Integer getInitialPosition() {
-            return initialPosition;
-        }
-
-        public Integer getFinalPosition() {
-            return finalPosition;
         }
     }
 }
