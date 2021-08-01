@@ -3,6 +3,7 @@ package com.op.ludo.service;
 import com.op.ludo.dao.BoardStateRepo;
 import com.op.ludo.dao.PlayerStateRepo;
 import com.op.ludo.exceptions.BoardNotFoundException;
+import com.op.ludo.exceptions.InvalidBoardRequest;
 import com.op.ludo.exceptions.InvalidPlayerMoveException;
 import com.op.ludo.game.action.AbstractAction;
 import com.op.ludo.game.action.impl.*;
@@ -122,16 +123,11 @@ public class GamePlayService {
                     new DiceRollPending(boardState.getBoardId(), nextPlayer.getPlayerId());
             boardState.setWhoseTurn(nextPlayer.getPlayerId());
         }
+
+        boardState.setLastActionTime();
         actionList.add(diceRollPending);
         boardStateRepo.save(boardState);
         return actionList;
-    }
-
-    @Transactional(value = Transactional.TxType.REQUIRES_NEW)
-    public void blockAllBoardMoves(BoardState boardState) {
-        boardState.setMovePending(false);
-        boardState.setRollPending(false);
-        boardStateRepo.save(boardState);
     }
 
     public List<AbstractAction> missedDiceRollHandler(Long boardId, String playerId) {
@@ -155,7 +151,6 @@ public class GamePlayService {
                 LobbyHelper.getRandomNumberInRange(0, movableStones.size() - 1);
         StoneMove randomStoneMove =
                 getNewStoneMove(playerState, boardState, movableStones.get(moveRandomStoneNumber));
-        actionList.add(randomStoneMove);
         actionList.addAll(updateBoardWithStoneMove(randomStoneMove));
         return actionList;
     }
@@ -233,13 +228,20 @@ public class GamePlayService {
         for (int i = 0; i < playerStateList.size(); i++) {
             if (playerStateList.get(i).equals(currentPlayer)) {
                 index = i;
+                index++;
+                break;
             }
         }
-        if (index < playerStateList.size() - 1) {
-            return playerStateList.get(index + 1);
-        } else {
-            return playerStateList.get(0);
+        while (!playerStateList.get(index).equals(currentPlayer)) {
+            if (index < playerStateList.size() && playerStateList.get(index).isPlayerActive()) {
+                return playerStateList.get(index);
+            } else if (index >= playerStateList.size()) {
+                index = 0;
+            } else {
+                index++;
+            }
         }
+        throw new InvalidBoardRequest("Player not found");
     }
 
     private void updateStoneMoveInDB(StoneMove stoneMove) {
@@ -429,5 +431,12 @@ public class GamePlayService {
             return playerState.getStone3();
         }
         return playerState.getStone4();
+    }
+
+    @Transactional(value = Transactional.TxType.REQUIRES_NEW)
+    public void blockAllBoardMoves(BoardState boardState) {
+        boardState.setMovePending(false);
+        boardState.setRollPending(false);
+        boardStateRepo.save(boardState);
     }
 }
