@@ -25,3 +25,4 @@ firebase:
 
 gameconfig:
   turn-time-limit: 10000
+  enable-timer: false
