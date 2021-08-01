@@ -32,6 +32,8 @@ public class GamePlayService {
 
     @Autowired BoardStateRepo boardStateRepo;
 
+    @Autowired TimerService timerService;
+
     public List<AbstractAction> startGame(Long boardId, String playerId) {
         List<AbstractAction> actions = new ArrayList<>();
         Optional<BoardState> boardOptional = boardStateRepo.findById(boardId);
@@ -52,7 +54,9 @@ public class GamePlayService {
     }
 
     private void doStartGame(BoardState boardState) {
-        boardState.setStartTime(DateTimeUtil.nowEpoch());
+        Long startTime = DateTimeUtil.nowEpoch();
+        boardState.setStartTime(startTime);
+        boardState.setLastActionTime(startTime);
         boardState.setStarted(true);
     }
 
@@ -81,7 +85,11 @@ public class GamePlayService {
                         diceRollReq.getArgs().getPlayerId(), diceRollReq.getArgs().getBoardId());
         boardState.setLastDiceRoll(diceRoll.getArgs().getDiceRoll());
         boardState.setRollPending(false);
-        boardState.setMovePending(true);
+        boardState.setMovePending(true); // whose turn won't be updated here as it will remain same
+        Long actionTime = DateTimeUtil.nowEpoch();
+        boardState.setLastActionTime(actionTime);
+        timerService.scheduleActionCheck(
+                boardState.getBoardId(), playerState.getPlayerId(), actionTime);
         boardStateRepo.save(boardState);
         actionList.add(diceRoll);
         StoneMovePending stoneMovePending =
@@ -113,18 +121,23 @@ public class GamePlayService {
         boardState.setRollPending(true);
         boardState.setMovePending(false);
         DiceRollPending diceRollPending;
+        String diceRollPlayerId;
         if (boardState.getLastDiceRoll() == 6 || hasCutStone) {
+            diceRollPlayerId = playerState.getPlayerId();
             diceRollPending =
                     new DiceRollPending(
                             stoneMove.getArgs().getBoardId(), stoneMove.getArgs().getPlayerId());
         } else {
             PlayerState nextPlayer = getNextPlayer(playerState, boardState);
+            diceRollPlayerId = nextPlayer.getPlayerId();
             diceRollPending =
                     new DiceRollPending(boardState.getBoardId(), nextPlayer.getPlayerId());
             boardState.setWhoseTurn(nextPlayer.getPlayerId());
         }
-
-        boardState.setLastActionTime();
+        Long actionTime = DateTimeUtil.nowEpoch();
+        boardState.setLastActionTime(actionTime);
+        boardState.setWhoseTurn(diceRollPlayerId);
+        timerService.scheduleActionCheck(boardState.getBoardId(), diceRollPlayerId, actionTime);
         actionList.add(diceRollPending);
         boardStateRepo.save(boardState);
         return actionList;
@@ -145,13 +158,24 @@ public class GamePlayService {
             DiceRollPending diceRollPending =
                     new DiceRollPending(boardState.getBoardId(), nextPlayer.getPlayerId());
             actionList.add(diceRollPending);
-            return actionList;
+            boardState.setRollPending(true);
+            boardState.setMovePending(false);
+            Long actionTime = DateTimeUtil.nowEpoch();
+            boardState.setLastActionTime(actionTime);
+            boardState.setWhoseTurn(nextPlayer.getPlayerId());
+            timerService.scheduleActionCheck(
+                    boardState.getBoardId(), nextPlayer.getPlayerId(), actionTime);
+        } else {
+            Integer moveRandomStoneNumber =
+                    LobbyHelper.getRandomNumberInRange(0, movableStones.size() - 1);
+            StoneMove randomStoneMove =
+                    getNewStoneMove(
+                            playerState, boardState, movableStones.get(moveRandomStoneNumber));
+            actionList.addAll(updateBoardWithStoneMove(randomStoneMove));
         }
-        Integer moveRandomStoneNumber =
-                LobbyHelper.getRandomNumberInRange(0, movableStones.size() - 1);
-        StoneMove randomStoneMove =
-                getNewStoneMove(playerState, boardState, movableStones.get(moveRandomStoneNumber));
-        actionList.addAll(updateBoardWithStoneMove(randomStoneMove));
+        playerState.setTurnsMissed(playerState.getTurnsMissed() + 1);
+        playerStateRepo.save(playerState);
+        boardStateRepo.save(boardState);
         return actionList;
     }
 

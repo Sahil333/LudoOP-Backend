@@ -15,13 +15,13 @@ import org.springframework.stereotype.Service;
 @Transactional
 public class TimerService {
 
-    @Autowired BoardStateRepo boardStateRepo;
+    @Autowired private BoardStateRepo boardStateRepo;
 
-    @Autowired ThreadPoolTaskScheduler threadPoolTaskScheduler;
+    @Autowired private ThreadPoolTaskScheduler threadPoolTaskScheduler;
 
-    @Autowired GamePlayService gamePlayService;
+    @Autowired private GamePlayService gamePlayService;
 
-    @Autowired CommunicationService communicationService;
+    @Autowired private CommunicationService communicationService;
 
     private class TimerAction implements Runnable {
         Long boardId;
