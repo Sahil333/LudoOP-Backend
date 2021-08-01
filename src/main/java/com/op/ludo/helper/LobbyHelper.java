@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class LobbyHelper {
 
-
     @Value("${gameconfig.turn-time-limit}")
     Long turnTimeLimit;
 
@@ -31,7 +30,6 @@ public class LobbyHelper {
                         0,
                         playerId,
                         turnTimeLimit,
-
                         "random",
                         100,
                         currentTime);
