@@ -47,7 +47,7 @@ public class TimerTests extends BaseIntegrationTest {
                 equalTo(1));
 
         lastActionTime = boardStateActual.getLastActionTime();
-        Thread.sleep(1000);
+        Thread.sleep(1200);
 
         boardStateActual = boardStateRepo.findById(boardState.getBoardId()).get();
         assertThat(boardStateActual.getWhoseTurn(), not(equalTo(boardClients.getPlayerId(0))));
