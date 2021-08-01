@@ -144,8 +144,11 @@ public class GamePlayService {
     }
 
     public List<AbstractAction> missedDiceRollHandler(Long boardId, String playerId) {
-        List<AbstractAction> actionList = new ArrayList<>();
-        return actionList;
+        DiceRollReq diceRollReq = new DiceRollReq(boardId, playerId);
+        PlayerState playerState = em.getReference(PlayerState.class, playerId);
+        playerState.setTurnsMissed(playerState.getTurnsMissed() + 1);
+        playerStateRepo.save(playerState);
+        return rollDiceForPlayer(diceRollReq);
     }
 
     public List<AbstractAction> missedTurnHandler(Long boardId, String playerId) {
