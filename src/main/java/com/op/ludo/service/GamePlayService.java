@@ -34,15 +34,13 @@ public class GamePlayService {
 
     @Autowired TimerService timerService;
 
-    public List<AbstractAction> startGame(Long boardId, String playerId) {
+    public List<AbstractAction> startFriendGame(Long boardId, String playerId) {
         List<AbstractAction> actions = new ArrayList<>();
         Optional<BoardState> boardOptional = boardStateRepo.findById(boardId);
         if (boardOptional.isEmpty()) {
             throw new BoardNotFoundException("boardId=" + boardId + " not found");
         }
         BoardState board = boardOptional.get();
-        // TODO: If two players enter this transaction, both players will be able to start
-        //  and two timers will be set for the same player
         if (canStartGame(playerId, board)) {
             doStartGame(board);
             actions.add(new GameStarted(boardId, playerId));
@@ -54,6 +52,8 @@ public class GamePlayService {
             board.setLastActionTime(actionTime);
             timerService.scheduleActionCheck(boardId, board.getWhoseTurn(), actionTime);
             boardStateRepo.save(board);
+        } else {
+            throw new InvalidBoardRequest("Cannot start Game.");
         }
         return actions;
     }
@@ -66,7 +66,9 @@ public class GamePlayService {
     }
 
     private boolean canStartGame(String playerId, BoardState board) {
-        return !board.isStarted() && isPlayerInGame(playerId, board);
+        return !board.isStarted()
+                && isPlayerInGame(playerId, board)
+                && board.getPlayers().get(0).getPlayerId().equals(playerId);
     }
 
     public boolean isPlayerInGame(String playerId, BoardState board) {
