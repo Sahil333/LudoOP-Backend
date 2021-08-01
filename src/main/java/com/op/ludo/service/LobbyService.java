@@ -59,8 +59,16 @@ public class LobbyService {
         }
         int currentCount = boardState.getPlayerCount();
         boardState.setPlayerCount(currentCount + 1);
-        PlayerState playerState =
-                lobbyHelper.initializeNewPlayer(playerId, boardState, currentCount + 1);
+        PlayerState playerState;
+        if (currentCount
+                == 1) { // the 2nd player should be on second 3rd place and 3rd should be on 2nd
+            // place
+            playerState = lobbyHelper.initializeNewPlayer(playerId, boardState, 3);
+        } else if (currentCount == 2) {
+            playerState = lobbyHelper.initializeNewPlayer(playerId, boardState, 2);
+        } else {
+            playerState = lobbyHelper.initializeNewPlayer(playerId, boardState, currentCount + 1);
+        }
         playerStateRepo.save(playerState);
         boardStateRepo.save(boardState);
         return boardState;
