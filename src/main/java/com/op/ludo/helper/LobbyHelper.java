@@ -5,10 +5,16 @@ import com.op.ludo.model.PlayerQueue;
 import com.op.ludo.model.PlayerState;
 import com.op.ludo.util.DateTimeUtil;
 import java.util.Random;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
+@Component
 public class LobbyHelper {
 
-    public static BoardState initializeNewBoard(Long boardId, String playerId) {
+    @Value("${gameconfig.turn-time-limit}")
+    Long turnTimeLimit;
+
+    public BoardState initializeNewBoard(Long boardId, String playerId) {
         long currentTime = DateTimeUtil.nowEpoch();
         BoardState boardState =
                 new BoardState(
@@ -23,14 +29,14 @@ public class LobbyHelper {
                         currentTime,
                         0,
                         playerId,
-                        5,
+                        turnTimeLimit,
                         "random",
                         100,
                         currentTime);
         return boardState;
     }
 
-    public static PlayerState initializeNewPlayer(
+    public PlayerState initializeNewPlayer(
             String playerId, BoardState boardState, Integer playerNumber) {
         Integer stone1 = (-10 * playerNumber) - 1,
                 stone2 = stone1 - 1,
