@@ -1,7 +1,9 @@
 package com.op.ludo.controllers.websocket;
 
 import com.op.ludo.controllers.dto.websocket.GameStartDto;
+import com.op.ludo.controllers.dto.websocket.StoneMoveDto;
 import com.op.ludo.game.action.AbstractAction;
+import com.op.ludo.game.action.impl.StoneMove;
 import com.op.ludo.service.CommunicationService;
 import com.op.ludo.service.GamePlayService;
 import java.security.Principal;
@@ -25,5 +27,18 @@ public class UserActionController {
         List<AbstractAction> actions =
                 gameService.startGame(startReq.getBoardId(), principal.getName());
         communicationService.sendActions(startReq.getBoardId(), actions);
+    }
+
+    @MessageMapping("/game/action/moveStone")
+    public void moveStone(Principal principal, @Payload StoneMoveDto stoneMoveDto) {
+        StoneMove stoneMove =
+                new StoneMove(
+                        stoneMoveDto.getBoardId(),
+                        principal.getName(),
+                        stoneMoveDto.getStoneNumber(),
+                        stoneMoveDto.getInitialPosition(),
+                        stoneMoveDto.getFinalPosition());
+        List<AbstractAction> actions = gameService.updateBoardWithStoneMove(stoneMove);
+        communicationService.sendActions(stoneMoveDto.getBoardId(), actions);
     }
 }

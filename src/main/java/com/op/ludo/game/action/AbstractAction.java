@@ -1,8 +1,10 @@
 package com.op.ludo.game.action;
 
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 @EqualsAndHashCode
+@ToString
 public abstract class AbstractAction<A> {
 
     protected Action action;

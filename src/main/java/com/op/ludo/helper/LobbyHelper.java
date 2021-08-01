@@ -14,7 +14,7 @@ public class LobbyHelper {
     @Value("${gameconfig.turn-time-limit}")
     Long turnTimeLimit;
 
-    public BoardState initializeNewBoard(Long boardId) {
+    public BoardState initializeNewBoard(Long boardId, String playerId) {
         long currentTime = DateTimeUtil.nowEpoch();
         BoardState boardState =
                 new BoardState(
@@ -28,7 +28,7 @@ public class LobbyHelper {
                         false,
                         currentTime,
                         0,
-                        1,
+                        playerId,
                         turnTimeLimit,
                         "random",
                         100,

@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Files;
-import com.op.ludo.controllers.dto.websocket.ActionsWithBoardState;
 import com.op.ludo.integrationTest.BoardStompClients;
 import com.op.ludo.model.BoardState;
 import java.io.File;
@@ -75,9 +74,8 @@ public class DataReader {
                 "src/integrationTest/resources/data/game/BoardReadyState.json", BoardState.class);
     }
 
-    public static ActionsWithBoardState getStartedAction() {
+    public static BoardState getStartedBoard() {
         return getResource(
-                "src/integrationTest/resources/data/game/StartedAction.json",
-                ActionsWithBoardState.class);
+                "src/integrationTest/resources/data/game/BoardStartedState.json", BoardState.class);
     }
 }

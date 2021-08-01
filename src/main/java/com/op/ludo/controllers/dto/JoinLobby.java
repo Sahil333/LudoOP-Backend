@@ -8,6 +8,6 @@ import lombok.NonNull;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
-public class Board {
+public class JoinLobby {
     @NonNull Long boardId;
 }
