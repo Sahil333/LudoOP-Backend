@@ -1,8 +1,8 @@
 {
   "boardId": 26649474,
-  "startTime": 1627077344,
+  "startTime": 1627726641,
   "endTime": -1,
-  "lastDiceRoll": -1,
+  "lastDiceRoll": 4,
   "lastActionTime": 1627077344,
   "playerCount": 4,
   "players": [
@@ -68,8 +68,8 @@
   "boardTheme": "random",
   "bid": 100,
   "createdTime": 1627077344,
-  "started": false,
+  "movePending": true,
+  "rollPending": false,
   "ended": false,
-  "movePending": false,
-  "rollPending": false
+  "started": true
 }

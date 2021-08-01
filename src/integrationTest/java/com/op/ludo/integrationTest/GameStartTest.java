@@ -5,94 +5,44 @@ import static org.hamcrest.Matchers.equalTo;
 
 import com.op.ludo.controllers.dto.websocket.ActionsWithBoardState;
 import com.op.ludo.controllers.dto.websocket.GameStartDto;
-import com.op.ludo.dao.BoardStateRepo;
-import com.op.ludo.integrationTest.helper.AppObjectMapper;
+import com.op.ludo.game.action.impl.DiceRollPending;
+import com.op.ludo.game.action.impl.GameStarted;
 import com.op.ludo.integrationTest.helper.DataReader;
-import com.op.ludo.integrationTest.helper.FirebaseTokenProvider;
 import com.op.ludo.model.BoardState;
-import com.op.ludo.model.PlayerState;
-import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.web.server.LocalServerPort;
-import org.springframework.messaging.simp.stomp.StompHeaders;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @Slf4j
-public class GameStartTest {
-
-    private static final String socketEndpoint = "ws://localhost:%s/v1/join";
-
-    @LocalServerPort private Integer port;
-
-    private BoardStompClients boardClients;
-
-    @Autowired BoardStateRepo boardStateRepo;
-
-    @Autowired FirebaseTokenProvider tokenProvider;
-
-    @AfterEach
-    public void setup() throws ExecutionException, InterruptedException, TimeoutException {
-        if (boardClients != null) boardClients.stopClients();
-    }
+public class GameStartTest extends BaseIntegrationTest {
 
     @Test
-    public void startTheGame() throws ExecutionException, InterruptedException, TimeoutException {
+    public void startTheGame() {
         // setup
         BoardState boardState = DataReader.getReadyToStartBoard();
         setPlayerState(boardState);
         boardStateRepo.save(boardState);
 
-        List<BoardStompClients.UserCredentials> credentials = DataReader.getCredentialsList();
-        String endpoint = String.format(socketEndpoint, port);
-        boardClients =
-                new BoardStompClients(
-                        boardState.getBoardId(),
-                        credentials,
-                        endpoint,
-                        tokenProvider,
-                        AppObjectMapper.objectMapper());
-        // To let all subscription to be finished first, sleep
-        Thread.sleep(500L);
+        setupBoardStompClients(boardState.getBoardId());
 
         // act
-        StompHeaders headers = new StompHeaders();
-        headers.add("boardId", String.valueOf(boardState.getBoardId()));
-        headers.add("destination", "/app/game/action/start");
-        boardClients.send(headers, new GameStartDto(boardState.getBoardId()), 0);
+        boardClients.send("/app/game/action/start", new GameStartDto(boardState.getBoardId()), 0);
 
         // verify
-        ActionsWithBoardState expectedAction = DataReader.getStartedAction();
         // user1
-        ActionsWithBoardState action = boardClients.getMessage(0, 300, ActionsWithBoardState.class);
-        assertThat(action, equalTo(expectedAction));
+        ActionsWithBoardState action = checkAndReturnActions(ActionsWithBoardState.class);
+        assertThat(action.getActions().size(), equalTo(2));
 
-        // user2
-        action = boardClients.getMessage(1, 300, ActionsWithBoardState.class);
-        assertThat(action, equalTo(expectedAction));
+        assertThat(
+                action.getActions().get(0),
+                equalTo(new GameStarted(boardState.getBoardId(), boardClients.getPlayerId(0))));
 
-        // user3
-        action = boardClients.getMessage(2, 300, ActionsWithBoardState.class);
-        assertThat(action, equalTo(expectedAction));
-
-        // user4
-        action = boardClients.getMessage(3, 300, ActionsWithBoardState.class);
-        assertThat(action, equalTo(expectedAction));
+        assertThat(
+                action.getActions().get(1),
+                equalTo(new DiceRollPending(boardState.getBoardId(), boardClients.getPlayerId(0))));
 
         Optional<BoardState> boardStateActual = boardStateRepo.findById(boardState.getBoardId());
         assertThat(boardStateActual.isPresent(), equalTo(true));
         assertThat(boardStateActual.get().isStarted(), equalTo(true));
-    }
-
-    private void setPlayerState(BoardState board) {
-        for (PlayerState player : board.getPlayers()) {
-            player.setBoardState(board);
-        }
     }
 }

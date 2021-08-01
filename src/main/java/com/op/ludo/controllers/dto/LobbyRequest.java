@@ -9,7 +9,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
-public class BoardRequest {
+public class LobbyRequest {
     @NonNull private Integer bid;
     @NonNull private Type type;
     @Setter private String playerId;
