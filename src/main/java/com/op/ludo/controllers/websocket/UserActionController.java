@@ -27,7 +27,7 @@ public class UserActionController {
     @MessageMapping("/game/action/start")
     public void startGame(Principal principal, @Payload GameStartDto startReq) {
         List<AbstractAction> actions =
-                gameService.startGame(startReq.getBoardId(), principal.getName());
+                gameService.startFriendGame(startReq.getBoardId(), principal.getName());
         communicationService.sendActions(startReq.getBoardId(), actions);
     }
 

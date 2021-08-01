@@ -34,7 +34,7 @@ public class GamePlayService {
 
     @Autowired TimerService timerService;
 
-    public List<AbstractAction> startGame(Long boardId, String playerId) {
+    public List<AbstractAction> startFriendGame(Long boardId, String playerId) {
         List<AbstractAction> actions = new ArrayList<>();
         Optional<BoardState> boardOptional = boardStateRepo.findById(boardId);
         if (boardOptional.isEmpty()) {
@@ -66,7 +66,9 @@ public class GamePlayService {
     }
 
     private boolean canStartGame(String playerId, BoardState board) {
-        return !board.isStarted() && isPlayerInGame(playerId, board);
+        return !board.isStarted()
+                && isPlayerInGame(playerId, board)
+                && board.getPlayers().get(0).getPlayerId().equals(playerId);
     }
 
     public boolean isPlayerInGame(String playerId, BoardState board) {
