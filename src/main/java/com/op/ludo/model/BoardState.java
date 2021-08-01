@@ -41,7 +41,7 @@ public class BoardState {
 
     @NonNull private Integer whoseTurn;
 
-    @NonNull private Integer turnTimeLimit;
+    @NonNull private Long turnTimeLimit;
 
     @NonNull private String boardTheme;
 
@@ -63,7 +63,7 @@ public class BoardState {
             @NonNull Long lastActionTime,
             @NonNull Integer playerCount,
             @NonNull Integer whoseTurn,
-            @NonNull Integer turnTimeLimit,
+            @NonNull Long turnTimeLimit,
             @NonNull String boardTheme,
             @NonNull Integer bid,
             @NonNull Long createdTime) {

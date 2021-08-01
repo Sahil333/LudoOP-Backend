@@ -24,5 +24,4 @@ firebase:
     fetch-user: false
 
 gameconfig:
-  timer:
-    delay: 10000
+  turn-time-limit: 10000

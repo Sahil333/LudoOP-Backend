@@ -138,6 +138,13 @@ public class GamePlayService {
         return actionList;
     }
 
+    @Transactional(value = Transactional.TxType.REQUIRES_NEW)
+    public void blockAllBoardMoves(BoardState boardState) {
+        boardState.setMovePending(false);
+        boardState.setRollPending(false);
+        boardStateRepo.save(boardState);
+    }
+
     public List<AbstractAction> missedDiceRollHandler(Long boardId, String playerId) {
         List<AbstractAction> actionList = new ArrayList<>();
         return actionList;

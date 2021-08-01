@@ -1,7 +1,6 @@
 package com.op.ludo.service;
 
 import com.op.ludo.dao.BoardStateRepo;
-import com.op.ludo.dao.PlayerStateRepo;
 import com.op.ludo.game.action.AbstractAction;
 import com.op.ludo.model.BoardState;
 import java.util.ArrayList;
@@ -9,7 +8,6 @@ import java.util.Date;
 import java.util.List;
 import javax.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Service;
 
@@ -17,12 +15,7 @@ import org.springframework.stereotype.Service;
 @Transactional
 public class TimerService {
 
-    @Value("${gameconfig.timer.delay}")
-    Long timerDelay;
-
     @Autowired BoardStateRepo boardStateRepo;
-
-    @Autowired PlayerStateRepo playerStateRepo;
 
     @Autowired ThreadPoolTaskScheduler threadPoolTaskScheduler;
 
@@ -48,9 +41,10 @@ public class TimerService {
     }
 
     public void scheduleActionCheck(Long boardId, String playerId, Long actionTime) {
+        BoardState boardState = boardStateRepo.findById(boardId).get();
         TimerAction timerAction = new TimerAction(boardId, playerId, actionTime);
         threadPoolTaskScheduler.schedule(
-                timerAction, new Date(System.currentTimeMillis() + timerDelay));
+                timerAction, new Date(System.currentTimeMillis() + boardState.getTurnTimeLimit()));
     }
 
     private void actionMissedHandler(Long boardId, String playerId, Long actionTime) {
@@ -58,9 +52,7 @@ public class TimerService {
         Boolean isDiceRollMissed = boardState.isRollPending();
         Boolean isMoveMissed = boardState.isMovePending();
         if (actionTime == boardState.getLastActionTime()) { // block all possible actions
-            boardState.setMovePending(false);
-            boardState.setRollPending(false);
-            boardStateRepo.save(boardState);
+            gamePlayService.blockAllBoardMoves(boardState);
         }
         List<AbstractAction> abstractActionList = new ArrayList<>();
         if (isDiceRollMissed) {
