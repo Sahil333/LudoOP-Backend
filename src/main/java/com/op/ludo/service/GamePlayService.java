@@ -256,6 +256,9 @@ public class GamePlayService {
             if (playerStateList.get(i).equals(currentPlayer)) {
                 index = i;
                 index++;
+                if (index >= playerStateList.size()) {
+                    index = 0;
+                }
                 break;
             }
         }
