@@ -68,8 +68,8 @@
   "boardTheme": "random",
   "bid": 100,
   "createdTime": 1627077344,
-  "movePending": true,
-  "rollPending": false,
+  "movePending": false,
+  "rollPending": true,
   "ended": false,
   "started": true
 }
