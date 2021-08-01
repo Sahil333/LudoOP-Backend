@@ -1,0 +1,28 @@
+server:
+  port: 8082
+
+spring:
+  h2:
+    console:
+      enabled: true
+  datasource:
+    platform: h2
+    url: jdbc:h2:mem:vishu
+    #    url: jdbc:h2:tcp://localhost:9090/mem:vishu
+    driverClassName: org.h2.Driver
+    username: sa
+    password:
+
+player:
+  queue:
+    time-step: 5000
+    gc: 3600000
+
+firebase:
+  auth:
+    enabled: true
+    fetch-user: false
+
+gameconfig:
+  turn-time-limit: 1000
+  enable-timer: false

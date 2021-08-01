@@ -41,6 +41,8 @@ public class GamePlayService {
             throw new BoardNotFoundException("boardId=" + boardId + " not found");
         }
         BoardState board = boardOptional.get();
+        // TODO: If two players enter this transaction, both players will be able to start
+        //  and two timers will be set for the same player
         if (canStartGame(playerId, board)) {
             doStartGame(board);
             actions.add(new GameStarted(boardId, playerId));
@@ -48,6 +50,9 @@ public class GamePlayService {
             actions.add(playerTurn);
             board.setRollPending(true);
             board.setMovePending(false);
+            Long actionTime = DateTimeUtil.nowEpoch();
+            board.setLastActionTime(actionTime);
+            timerService.scheduleActionCheck(boardId, board.getWhoseTurn(), actionTime);
             boardStateRepo.save(board);
         }
         return actions;
@@ -100,7 +105,7 @@ public class GamePlayService {
     }
 
     public List<AbstractAction> updateBoardWithStoneMove(StoneMove stoneMove) {
-        List<AbstractAction> actionList = new ArrayList<AbstractAction>();
+        List<AbstractAction> actionList = new ArrayList<>();
         if (!isStoneMoveValid(stoneMove)) {
             throw new InvalidPlayerMoveException(
                     "Move is not valid for stone=" + stoneMove.getArgs().getStoneNumber());

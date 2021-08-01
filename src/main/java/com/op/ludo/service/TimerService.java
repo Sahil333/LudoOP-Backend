@@ -6,7 +6,9 @@ import com.op.ludo.model.BoardState;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import javax.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @Transactional
+@Slf4j
 public class TimerService {
 
     @Value("${gameconfig.enable-timer}")
@@ -40,15 +43,33 @@ public class TimerService {
 
         @Override
         public void run() {
-            if (enableTimer) actionMissedHandler(this.boardId, this.playerId, this.actionTime);
+            if (enableTimer) {
+                log.info("timer caught up");
+                actionMissedHandler(this.boardId, this.playerId, this.actionTime);
+            }
         }
     }
 
+    public void setEnableTimer(boolean enableTimer) {
+        this.enableTimer = enableTimer;
+    }
+
+    public void clearTimerTasks() {
+        ((ScheduledThreadPoolExecutor) threadPoolTaskScheduler.getScheduledExecutor())
+                .getQueue()
+                .clear();
+        log.debug("cleared timer tasks");
+    }
+
     public void scheduleActionCheck(Long boardId, String playerId, Long actionTime) {
+        if (!enableTimer) return;
         BoardState boardState = boardStateRepo.findById(boardId).get();
         TimerAction timerAction = new TimerAction(boardId, playerId, actionTime);
         threadPoolTaskScheduler.schedule(
-                timerAction, new Date(System.currentTimeMillis() + boardState.getTurnTimeLimit()));
+                timerAction,
+                new Date(
+                        threadPoolTaskScheduler.getClock().millis()
+                                + boardState.getTurnTimeLimit()));
     }
 
     private void actionMissedHandler(Long boardId, String playerId, Long actionTime) {
