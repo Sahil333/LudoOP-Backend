@@ -62,18 +62,31 @@ public abstract class BaseIntegrationTest {
     }
 
     protected <T> T checkAndReturnActions(Class<T> targetClass) {
-        T actions = boardClients.getMessage(0, 300, targetClass);
+        return checkAndReturnActions(targetClass, 500);
+    }
 
-        T actions2 = boardClients.getMessage(1, 300, targetClass);
+    protected <T> T checkAndReturnActions(Class<T> targetClass, long timeout) {
+        T actions = boardClients.getMessage(0, timeout, targetClass);
 
-        T actions3 = boardClients.getMessage(2, 300, targetClass);
+        T actions2 = boardClients.getMessage(1, timeout, targetClass);
 
-        T actions4 = boardClients.getMessage(3, 300, targetClass);
+        T actions3 = boardClients.getMessage(2, timeout, targetClass);
+
+        T actions4 = boardClients.getMessage(3, timeout, targetClass);
 
         assertThat(actions, equalTo(actions2));
         assertThat(actions, equalTo(actions3));
         assertThat(actions, equalTo(actions4));
 
         return actions;
+    }
+
+    protected BoardState setupAStartedBoard() {
+        BoardState boardState = DataReader.getStartedBoard();
+        setPlayerState(boardState);
+        boardStateRepo.save(boardState);
+
+        setupBoardStompClients(boardState.getBoardId());
+        return boardState;
     }
 }

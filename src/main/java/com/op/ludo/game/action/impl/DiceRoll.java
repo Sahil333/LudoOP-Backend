@@ -6,6 +6,7 @@ import com.op.ludo.game.action.AbstractAction;
 import com.op.ludo.game.action.Action;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.ToString;
 import org.springframework.util.Assert;
 
 @EqualsAndHashCode(callSuper = true)
@@ -24,6 +25,7 @@ public class DiceRoll extends AbstractAction<DiceRoll.DiceRollArgs> {
 
     @Getter
     @EqualsAndHashCode
+    @ToString
     public static class DiceRollArgs {
         private final Long boardId;
         private final String playerId;

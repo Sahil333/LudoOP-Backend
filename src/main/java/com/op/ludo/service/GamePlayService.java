@@ -41,25 +41,13 @@ public class GamePlayService {
         if (canStartGame(playerId, board)) {
             doStartGame(board);
             actions.add(new GameStarted(boardId, playerId));
-            AbstractAction playerTurn =
-                    new DiceRollPending(
-                            boardId,
-                            getPlayerId(board, board.getWhoseTurn()),
-                            board.getWhoseTurn());
+            AbstractAction playerTurn = new DiceRollPending(boardId, board.getWhoseTurn());
             actions.add(playerTurn);
             board.setRollPending(true);
             board.setMovePending(false);
             boardStateRepo.save(board);
         }
         return actions;
-    }
-
-    private String getPlayerId(BoardState boardState, Integer playerNumber) {
-        List<PlayerState> players = boardState.getPlayers();
-        for (PlayerState player : players) {
-            if (player.getPlayerNumber().equals(playerNumber)) return player.getPlayerId();
-        }
-        return null;
     }
 
     private void doStartGame(BoardState boardState) {
@@ -84,7 +72,7 @@ public class GamePlayService {
         PlayerState playerState = em.find(PlayerState.class, diceRollReq.getArgs().getPlayerId());
         BoardState boardState = playerState.getBoardState();
         if (!boardState.isRollPending()
-                || boardState.getWhoseTurn() != playerState.getPlayerNumber()) {
+                || !boardState.getWhoseTurn().equals(playerState.getPlayerId())) {
             throw new InvalidPlayerMoveException("Invalid dice roll request.");
         }
         DiceRoll diceRoll =
@@ -97,9 +85,7 @@ public class GamePlayService {
         actionList.add(diceRoll);
         StoneMovePending stoneMovePending =
                 new StoneMovePending(
-                        diceRollReq.getArgs().getBoardId(),
-                        diceRollReq.getArgs().getPlayerId(),
-                        playerState.getPlayerNumber());
+                        diceRollReq.getArgs().getBoardId(), diceRollReq.getArgs().getPlayerId());
         actionList.add(stoneMovePending);
         return actionList;
     }
@@ -111,8 +97,10 @@ public class GamePlayService {
                     "Move is not valid for stone=" + stoneMove.getArgs().getStoneNumber());
         }
         actionList.add(stoneMove);
-        if (!(isSafePosition(stoneMove.getArgs().getFinalPosition())
-                || getFinalPositionStoneCount(stoneMove) != 1)) {
+        boolean hasCutStone = false;
+        if (!isSafePosition(stoneMove.getArgs().getFinalPosition())
+                && getFinalPositionStoneCount(stoneMove) == 1) {
+            hasCutStone = true;
             StoneMove cutStoneMove = getFinalPositionCutStoneMove(stoneMove);
             actionList.add(cutStoneMove);
             updateStoneMoveInDB(cutStoneMove);
@@ -124,20 +112,15 @@ public class GamePlayService {
         boardState.setRollPending(true);
         boardState.setMovePending(false);
         DiceRollPending diceRollPending;
-        if (boardState.getLastDiceRoll() == 6) {
+        if (boardState.getLastDiceRoll() == 6 || hasCutStone) {
             diceRollPending =
                     new DiceRollPending(
-                            stoneMove.getArgs().getBoardId(),
-                            stoneMove.getArgs().getPlayerId(),
-                            playerState.getPlayerNumber());
+                            stoneMove.getArgs().getBoardId(), stoneMove.getArgs().getPlayerId());
         } else {
             PlayerState nextPlayer = getNextPlayer(playerState, boardState);
             diceRollPending =
-                    new DiceRollPending(
-                            boardState.getBoardId(),
-                            nextPlayer.getPlayerId(),
-                            nextPlayer.getPlayerNumber());
-            boardState.setWhoseTurn(nextPlayer.getPlayerNumber());
+                    new DiceRollPending(boardState.getBoardId(), nextPlayer.getPlayerId());
+            boardState.setWhoseTurn(nextPlayer.getPlayerId());
         }
         actionList.add(diceRollPending);
         boardStateRepo.save(boardState);
@@ -157,10 +140,7 @@ public class GamePlayService {
         if (movableStones.size() == 0) {
             PlayerState nextPlayer = getNextPlayer(playerState, boardState);
             DiceRollPending diceRollPending =
-                    new DiceRollPending(
-                            boardState.getBoardId(),
-                            nextPlayer.getPlayerId(),
-                            nextPlayer.getPlayerNumber());
+                    new DiceRollPending(boardState.getBoardId(), nextPlayer.getPlayerId());
             actionList.add(diceRollPending);
             return actionList;
         }
@@ -208,7 +188,7 @@ public class GamePlayService {
         BoardState boardState = playerState.getBoardState();
         Integer currentDBPosition =
                 getDatabaseStonePosition(playerState, stoneMove.getArgs().getStoneNumber());
-        if (!playerState.getPlayerNumber().equals(boardState.getWhoseTurn())
+        if (!playerState.getPlayerId().equals(boardState.getWhoseTurn())
                 || !boardState.isMovePending()
                 || !boardState.getBoardId().equals(stoneMove.getArgs().getBoardId())) {
             throw new InvalidPlayerMoveException("Turn not valid.");
@@ -366,7 +346,7 @@ public class GamePlayService {
         }
         if (currentPosition == 516
                 || currentPosition == 126
-                || currentPosition == 266
+                || currentPosition == 256
                 || currentPosition == 386) {
             return false;
         }
@@ -412,8 +392,8 @@ public class GamePlayService {
                     return currentPosition + diceRoll;
                 }
             } else if (playerNumber == 3) {
-                if (currentPosition <= 26 && diceRoll + currentPosition > 26) {
-                    return 260 + currentPosition + diceRoll - 26;
+                if (currentPosition <= 25 && diceRoll + currentPosition > 25) {
+                    return 250 + currentPosition + diceRoll - 25;
                 } else if (currentPosition + diceRoll > 52) {
                     return (currentPosition + diceRoll) % 52 + 1;
                 } else {

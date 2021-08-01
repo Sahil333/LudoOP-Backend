@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import java.util.List;
 import javax.persistence.*;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
 @Data
@@ -20,9 +19,9 @@ public class BoardState {
 
     private boolean isEnded;
 
-    @EqualsAndHashCode.Exclude @NonNull private Long startTime;
+    @NonNull private Long startTime;
 
-    @EqualsAndHashCode.Exclude @NonNull private Long endTime;
+    @NonNull private Long endTime;
 
     @NonNull private Integer lastDiceRoll;
 
@@ -30,7 +29,7 @@ public class BoardState {
 
     private boolean isRollPending;
 
-    @EqualsAndHashCode.Exclude @NonNull private Long lastActionTime;
+    @NonNull private Long lastActionTime;
 
     @NonNull private Integer playerCount;
 
@@ -40,7 +39,7 @@ public class BoardState {
             cascade = {CascadeType.ALL})
     private List<PlayerState> players;
 
-    @NonNull private Integer whoseTurn;
+    @NonNull private String whoseTurn;
 
     @NonNull private Integer turnTimeLimit;
 
@@ -48,7 +47,7 @@ public class BoardState {
 
     @NonNull private Integer bid;
 
-    @EqualsAndHashCode.Exclude @NonNull private Long createdTime;
+    @NonNull private Long createdTime;
 
     public BoardState() {}
 
@@ -63,7 +62,7 @@ public class BoardState {
             @NonNull Boolean isRollPending,
             @NonNull Long lastActionTime,
             @NonNull Integer playerCount,
-            @NonNull Integer whoseTurn,
+            @NonNull String whoseTurn,
             @NonNull Integer turnTimeLimit,
             @NonNull String boardTheme,
             @NonNull Integer bid,
@@ -86,13 +85,13 @@ public class BoardState {
     }
 
     @JsonIgnore
-    public PlayerState getPlayerState(Integer playerNumber) {
+    public PlayerState getPlayerState(String playerId) {
         return getPlayers().stream()
-                .filter(playerState -> playerState.getPlayerNumber().equals(playerNumber))
+                .filter(playerState -> playerState.getPlayerId().equals(playerId))
                 .findFirst()
                 .orElseThrow(
                         () ->
                                 new IllegalArgumentException(
-                                        "No player found with player number=" + playerNumber));
+                                        "No player found with player id=" + playerId));
     }
 }

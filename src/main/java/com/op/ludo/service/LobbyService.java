@@ -1,6 +1,6 @@
 package com.op.ludo.service;
 
-import com.op.ludo.controllers.dto.BoardRequest;
+import com.op.ludo.controllers.dto.LobbyRequest;
 import com.op.ludo.dao.BoardStateRepo;
 import com.op.ludo.dao.PlayerStateRepo;
 import com.op.ludo.exceptions.BoardNotFoundException;
@@ -73,14 +73,14 @@ public class LobbyService {
 
     public BoardState createBoardWithPlayers(List<String> playerIds) {
         Long boardId = generateBoardId();
-        BoardState boardState = createNewBoard(boardId);
+        BoardState boardState = createNewBoard(boardId, playerIds.get(0));
         for (String playerId : playerIds) {
             joinBoard(playerId, boardState);
         }
         return boardState;
     }
 
-    public BoardState handleBoardRequest(BoardRequest request) {
+    public BoardState handleBoardRequest(LobbyRequest request) {
         if (!canCreateLobby(request.getBid(), request.getPlayerId())) {
             throw new IllegalArgumentException("Invalid board request");
         }
@@ -105,20 +105,20 @@ public class LobbyService {
         return !(bid != 100 || isPlayerAlreadyPartOfGame(playerId));
     }
 
-    private BoardState handleOnlineBoardRequest(BoardRequest request) {
+    private BoardState handleOnlineBoardRequest(LobbyRequest request) {
         playerQueueService.addToPlayerQueue(request.getPlayerId());
         return null;
     }
 
-    private BoardState handleFriendBoardRequest(BoardRequest request) {
+    private BoardState handleFriendBoardRequest(LobbyRequest request) {
         Long boardId = generateBoardId();
-        BoardState boardState = createNewBoard(boardId);
+        BoardState boardState = createNewBoard(boardId, request.getPlayerId());
         joinBoard(request.getPlayerId(), boardState);
         return boardState;
     }
 
-    private BoardState createNewBoard(Long boardId) {
-        BoardState boardState = LobbyHelper.initializeNewBoard(boardId);
+    private BoardState createNewBoard(Long boardId, String playerId) {
+        BoardState boardState = LobbyHelper.initializeNewBoard(boardId, playerId);
         boardStateRepo.save(boardState);
         return boardState;
     }
