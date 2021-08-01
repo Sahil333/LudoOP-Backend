@@ -21,6 +21,8 @@ import org.springframework.stereotype.Service;
 @Transactional
 @Slf4j
 public class LobbyService {
+    @Autowired LobbyHelper lobbyHelper;
+
     @PersistenceContext EntityManager em;
 
     @Autowired PlayerStateRepo playerStateRepo;
@@ -58,7 +60,7 @@ public class LobbyService {
         int currentCount = boardState.getPlayerCount();
         boardState.setPlayerCount(currentCount + 1);
         PlayerState playerState =
-                LobbyHelper.initializeNewPlayer(playerId, boardState, currentCount + 1);
+                lobbyHelper.initializeNewPlayer(playerId, boardState, currentCount + 1);
         playerStateRepo.save(playerState);
         boardStateRepo.save(boardState);
         return boardState;
@@ -118,7 +120,7 @@ public class LobbyService {
     }
 
     private BoardState createNewBoard(Long boardId, String playerId) {
-        BoardState boardState = LobbyHelper.initializeNewBoard(boardId, playerId);
+        BoardState boardState = lobbyHelper.initializeNewBoard(boardId, playerId);
         boardStateRepo.save(boardState);
         return boardState;
     }

@@ -22,3 +22,6 @@ firebase:
   auth:
     enabled: true
     fetch-user: false
+
+gameconfig:
+  turn-time-limit: 10000
