@@ -35,7 +35,7 @@ public class BoardDto {
 
     private String boardTheme;
     @EqualsAndHashCode.Exclude private Long lastActionTime;
-    private Integer turnTimeLimit;
+    private Long turnTimeLimit;
     private List<PlayerStateDto> players;
 
     public PlayerStateDto getPlayer(String playerId) {
