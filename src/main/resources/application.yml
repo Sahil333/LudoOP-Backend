@@ -22,3 +22,7 @@ firebase:
   auth:
     enabled: true
     fetch-user: false
+
+gameconfig:
+  timer:
+    delay: 10000

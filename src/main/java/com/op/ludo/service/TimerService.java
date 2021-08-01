@@ -5,39 +5,58 @@ import com.op.ludo.dao.PlayerStateRepo;
 import com.op.ludo.game.action.AbstractAction;
 import com.op.ludo.model.BoardState;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import javax.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Service;
 
 @Service
 @Transactional
 public class TimerService {
 
+    @Value("${gameconfig.timer.delay}")
+    Long timerDelay;
+
     @Autowired BoardStateRepo boardStateRepo;
 
     @Autowired PlayerStateRepo playerStateRepo;
+
+    @Autowired ThreadPoolTaskScheduler threadPoolTaskScheduler;
 
     @Autowired GamePlayService gamePlayService;
 
     @Autowired CommunicationService communicationService;
 
+    private class TimerAction implements Runnable {
+        Long boardId;
+        String playerId;
+        Long actionTime;
+
+        public TimerAction(Long boardId, String playerId, Long actionTime) {
+            this.boardId = boardId;
+            this.playerId = playerId;
+            this.actionTime = actionTime;
+        }
+
+        @Override
+        public void run() {
+            actionMissedHandler(this.boardId, this.playerId, this.actionTime);
+        }
+    }
+
     public void scheduleActionCheck(Long boardId, String playerId, Long actionTime) {
-        new java.util.Timer()
-                .schedule(
-                        new java.util.TimerTask() {
-                            @Override
-                            public void run() {
-                                actionMissedHandler(boardId, playerId, actionTime);
-                            }
-                        },
-                        10000);
+        TimerAction timerAction = new TimerAction(boardId, playerId, actionTime);
+        threadPoolTaskScheduler.schedule(
+                timerAction, new Date(System.currentTimeMillis() + timerDelay));
     }
 
     private void actionMissedHandler(Long boardId, String playerId, Long actionTime) {
         BoardState boardState = boardStateRepo.findById(boardId).get();
-        Boolean isDiceRollMissed = false;
-        Boolean isMoveMissed = true;
+        Boolean isDiceRollMissed = boardState.isRollPending();
+        Boolean isMoveMissed = boardState.isMovePending();
         if (actionTime == boardState.getLastActionTime()) { // block all possible actions
             boardState.setMovePending(false);
             boardState.setRollPending(false);
@@ -49,6 +68,7 @@ public class TimerService {
         } else if (isMoveMissed) {
             abstractActionList = gamePlayService.missedTurnHandler(boardId, playerId);
         }
-        communicationService.sendActions(boardId, abstractActionList);
+        if (!abstractActionList.isEmpty())
+            communicationService.sendActions(boardId, abstractActionList);
     }
 }
