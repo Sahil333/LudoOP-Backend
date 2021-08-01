@@ -7,7 +7,6 @@ import com.op.ludo.controllers.dto.websocket.ActionsWithBoardState;
 import com.op.ludo.controllers.dto.websocket.GameStartDto;
 import com.op.ludo.game.action.impl.DiceRollPending;
 import com.op.ludo.game.action.impl.GameStarted;
-import com.op.ludo.integrationTest.helper.DataReader;
 import com.op.ludo.model.BoardState;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
@@ -19,11 +18,7 @@ public class GameStartTest extends BaseIntegrationTest {
     @Test
     public void startTheGame() {
         // setup
-        BoardState boardState = DataReader.getReadyToStartBoard();
-        setPlayerState(boardState);
-        boardStateRepo.save(boardState);
-
-        setupBoardStompClients(boardState.getBoardId());
+        BoardState boardState = setupAReadyBoard();
 
         // act
         boardClients.send("/app/game/action/start", new GameStartDto(boardState.getBoardId()), 0);

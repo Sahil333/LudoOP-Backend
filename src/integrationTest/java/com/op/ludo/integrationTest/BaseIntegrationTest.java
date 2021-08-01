@@ -9,6 +9,7 @@ import com.op.ludo.integrationTest.helper.DataReader;
 import com.op.ludo.integrationTest.helper.FirebaseTokenProvider;
 import com.op.ludo.model.BoardState;
 import com.op.ludo.model.PlayerState;
+import com.op.ludo.service.TimerService;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -16,9 +17,12 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.test.context.ActiveProfiles;
 
+@ActiveProfiles(value = "integrationtest")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @Slf4j
 public abstract class BaseIntegrationTest {
@@ -33,10 +37,16 @@ public abstract class BaseIntegrationTest {
 
     @Autowired FirebaseTokenProvider tokenProvider;
 
+    @Autowired TimerService timerService;
+
+    @Value("${gameconfig.turn-time-limit}")
+    protected Long turnTimeLimit;
+
     @AfterEach
     public void setup() throws ExecutionException, InterruptedException, TimeoutException {
         if (boardClients != null) boardClients.stopClients();
         boardStateRepo.deleteAll();
+        timerService.clearTimerTasks();
     }
 
     @SneakyThrows
@@ -83,6 +93,17 @@ public abstract class BaseIntegrationTest {
 
     protected BoardState setupAStartedBoard() {
         BoardState boardState = DataReader.getStartedBoard();
+        boardState.setTurnTimeLimit(turnTimeLimit);
+        setPlayerState(boardState);
+        boardStateRepo.save(boardState);
+
+        setupBoardStompClients(boardState.getBoardId());
+        return boardState;
+    }
+
+    protected BoardState setupAReadyBoard() {
+        BoardState boardState = DataReader.getReadyToStartBoard();
+        boardState.setTurnTimeLimit(turnTimeLimit);
         setPlayerState(boardState);
         boardStateRepo.save(boardState);
 
