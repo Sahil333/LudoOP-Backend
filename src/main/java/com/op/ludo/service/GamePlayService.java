@@ -58,6 +58,48 @@ public class GamePlayService {
         return actions;
     }
 
+    List<AbstractAction> getEndGameActions(BoardState boardState) {
+        List<AbstractAction> abstractActions = new ArrayList<>();
+        if (hasGameFinished(boardState)) {
+            GameEnded gameEnded = new GameEnded(getPlayerPositions(boardState));
+            abstractActions.add(gameEnded);
+            boardState.setEnded(true);
+            boardState.setEndTime(DateTimeUtil.nowEpoch());
+            boardStateRepo.save(boardState);
+        }
+        return abstractActions;
+    }
+
+    private List<GameEnded.PlayerPosition> getPlayerPositions(BoardState boardState) {
+        List<PlayerState> playerStates = boardState.getPlayers();
+        List<GameEnded.PlayerPosition> playerPositions = new ArrayList<>();
+        for (PlayerState playerState : playerStates) {
+            GameEnded.PlayerPosition playerPosition =
+                    new GameEnded.PlayerPosition(
+                            playerState.getPlayerId(),
+                            playerState.getPlayerPosition(),
+                            boardState.getBid());
+            playerPositions.add(playerPosition);
+        }
+        return playerPositions;
+    }
+
+    private Boolean hasGameFinished(
+            BoardState boardState) { // pass final board state after stone move has been done.
+        List<PlayerState> playerStates = boardState.getPlayers();
+        return getFinishedPlayerCount(playerStates) == playerStates.size() - 1;
+    }
+
+    private Integer getFinishedPlayerCount(List<PlayerState> playerStates) {
+        int count = 0;
+        for (PlayerState playerState : playerStates) {
+            if (playerState.getHomeCount() == 4 || !playerState.isPlayerActive()) {
+                count++;
+            }
+        }
+        return count;
+    }
+
     private void doStartGame(BoardState boardState) {
         Long startTime = DateTimeUtil.nowEpoch();
         boardState.setStartTime(startTime);
@@ -125,6 +167,11 @@ public class GamePlayService {
         PlayerState playerState =
                 em.getReference(PlayerState.class, stoneMove.getArgs().getPlayerId());
         BoardState boardState = em.getReference(BoardState.class, stoneMove.getArgs().getBoardId());
+        List<AbstractAction> endGameActions = getEndGameActions(boardState);
+        if (endGameActions.size() > 0) {
+            actionList.addAll(endGameActions);
+            return actionList;
+        }
         boardState.setRollPending(true);
         boardState.setMovePending(false);
         DiceRollPending diceRollPending;
