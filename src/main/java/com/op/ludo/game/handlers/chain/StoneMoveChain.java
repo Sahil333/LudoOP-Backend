@@ -4,8 +4,8 @@ import com.op.ludo.game.action.AbstractAction;
 import com.op.ludo.game.action.impl.StoneMove;
 import com.op.ludo.game.handlers.ActionHandler;
 import com.op.ludo.game.handlers.GameEndHandler;
-import com.op.ludo.game.handlers.GamePositionHandler;
 import com.op.ludo.game.handlers.NextPlayerHandler;
+import com.op.ludo.game.handlers.PlayerPositionHandler;
 import com.op.ludo.game.handlers.StoneCutHandler;
 import com.op.ludo.game.handlers.StoneMoveHandler;
 import com.op.ludo.game.handlers.TimerHandler;
@@ -24,8 +24,8 @@ public class StoneMoveChain extends ActionHandler {
         ActionHandler timerHandler = new TimerHandler(null, timerService);
         ActionHandler nextPlayerHandler = new NextPlayerHandler(timerHandler);
         ActionHandler gameEndHandler = new GameEndHandler(nextPlayerHandler);
-        ActionHandler gamePositionHandler = new GamePositionHandler(gameEndHandler);
-        ActionHandler stoneCutHandler = new StoneCutHandler(gamePositionHandler);
+        ActionHandler playerPositionHandler = new PlayerPositionHandler(gameEndHandler);
+        ActionHandler stoneCutHandler = new StoneCutHandler(playerPositionHandler);
         first = new StoneMoveHandler(stoneCutHandler);
     }
 

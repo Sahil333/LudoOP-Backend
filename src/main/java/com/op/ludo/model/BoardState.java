@@ -139,6 +139,7 @@ public class BoardState {
         }
     }
 
+    @JsonIgnore
     public Integer getNextPlayerPosition() {
         int maxPos = 0;
         for (PlayerState player : players) {
@@ -147,10 +148,12 @@ public class BoardState {
         return maxPos + 1;
     }
 
+    @JsonIgnore
     public Boolean hasGameFinished() { // pass final board state after stone move has been done.
         return getFinishedPlayerCount() == players.size() - 1;
     }
 
+    @JsonIgnore
     private Integer getFinishedPlayerCount() {
         int count = 0;
         for (PlayerState playerState : players) {
@@ -161,6 +164,7 @@ public class BoardState {
         return count;
     }
 
+    @JsonIgnore
     public PlayerState getNextPlayer(PlayerState currentPlayer) {
         Integer index = 0;
         for (int i = 0; i < players.size(); i++) {

@@ -138,7 +138,7 @@ public class GamePlayService {
         BoardState boardState = em.getReference(BoardState.class, boardId);
         List<Integer> movableStones = moveableStoneList(playerState, boardState);
         if (movableStones.size() == 0) {
-            PlayerState nextPlayer = getNextPlayer(playerState, boardState);
+            PlayerState nextPlayer = boardState.getNextPlayer(playerState);
             DiceRollPending diceRollPending =
                     new DiceRollPending(boardState.getBoardId(), nextPlayer.getPlayerId());
             actionList.add(diceRollPending);
@@ -202,31 +202,6 @@ public class GamePlayService {
             list.add(4);
         }
         return list;
-    }
-
-    private PlayerState getNextPlayer(PlayerState currentPlayer, BoardState boardState) {
-        List<PlayerState> playerStateList = boardState.getPlayers();
-        Integer index = 0;
-        for (int i = 0; i < playerStateList.size(); i++) {
-            if (playerStateList.get(i).equals(currentPlayer)) {
-                index = i;
-                index++;
-                if (index >= playerStateList.size()) {
-                    index = 0;
-                }
-                break;
-            }
-        }
-        while (!playerStateList.get(index).equals(currentPlayer)) {
-            if (index < playerStateList.size() && playerStateList.get(index).isPlayerActive()) {
-                return playerStateList.get(index);
-            } else if (index >= playerStateList.size()) {
-                index = 0;
-            } else {
-                index++;
-            }
-        }
-        throw new InvalidBoardRequest("Player not found");
     }
 
     private Boolean isStoneMovePossible(Integer currentPosition, Integer diceRoll) {

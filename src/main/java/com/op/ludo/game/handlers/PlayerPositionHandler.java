@@ -6,9 +6,9 @@ import com.op.ludo.model.BoardState;
 import com.op.ludo.model.PlayerState;
 import java.util.List;
 
-public class GamePositionHandler extends ActionHandler {
+public class PlayerPositionHandler extends ActionHandler {
 
-    public GamePositionHandler(ActionHandler next) {
+    public PlayerPositionHandler(ActionHandler next) {
         super(next);
     }
 
