@@ -6,6 +6,7 @@ import static com.op.ludo.model.BoardState.isStoneMovePossible;
 import com.op.ludo.dao.BoardStateRepo;
 import com.op.ludo.dao.PlayerStateRepo;
 import com.op.ludo.exceptions.BoardNotFoundException;
+import com.op.ludo.exceptions.InvalidBoardRequest;
 import com.op.ludo.exceptions.InvalidPlayerMoveException;
 import com.op.ludo.game.action.AbstractAction;
 import com.op.ludo.game.action.impl.*;
@@ -38,7 +39,6 @@ public class GamePlayService {
 
     @Autowired StoneMoveChain stoneMoveChain;
 
-
     @Autowired GameStartChain gameStartChain;
 
     public List<AbstractAction> startFriendGame(GameStarted gameStarted) {
@@ -54,7 +54,7 @@ public class GamePlayService {
         boardStateRepo.save(board);
         return actions;
     }
-  
+
     public List<AbstractAction> rollDiceForPlayer(DiceRollReq diceRollReq) {
         List<AbstractAction> actionList = new ArrayList<>();
         PlayerState playerState = em.find(PlayerState.class, diceRollReq.getArgs().getPlayerId());
