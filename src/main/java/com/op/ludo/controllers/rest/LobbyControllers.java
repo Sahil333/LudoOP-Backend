@@ -7,7 +7,7 @@ import com.op.ludo.controllers.dto.LobbyRequest;
 import com.op.ludo.exceptions.InvalidBoardRequest;
 import com.op.ludo.game.action.AbstractAction;
 import com.op.ludo.model.BoardState;
-import com.op.ludo.service.GamePlayService;
+import com.op.ludo.service.CoinService;
 import com.op.ludo.service.LobbyService;
 import com.op.ludo.service.PlayerQueueService;
 import java.util.ArrayList;
@@ -31,7 +31,7 @@ public class LobbyControllers {
 
     @Autowired IAuthenticationFacade auth;
 
-    @Autowired GamePlayService gamePlayService;
+    @Autowired CoinService coinService;
 
     @PostMapping(value = "lobby/friend/create")
     public Lobby createFriendLobby(@RequestBody LobbyRequest request) {
@@ -81,5 +81,12 @@ public class LobbyControllers {
     @PostMapping(value = "test/mymove")
     public List<AbstractAction> testMymoveController() {
         return new ArrayList<>();
+    }
+
+    // should be in separate controller class
+    @PostMapping(value = "coin/signup")
+    public void coinsOnSignUp(HttpServletResponse response) {
+        coinService.issueCoinForSignUp(auth.getPrincipal().getUsername());
+        response.setStatus(HttpStatus.NO_CONTENT.value());
     }
 }

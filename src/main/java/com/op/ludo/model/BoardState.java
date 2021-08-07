@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.op.ludo.exceptions.InvalidBoardRequest;
 import com.op.ludo.exceptions.InvalidPlayerMoveException;
 import java.util.List;
+import java.util.Optional;
 import javax.persistence.*;
 import lombok.Data;
 import lombok.NonNull;
@@ -261,5 +262,19 @@ public class BoardState {
             }
         }
         throw new InvalidBoardRequest("Player not found");
+    }
+
+    @JsonIgnore
+    public boolean isPlayerInGame(String playerId) {
+        Optional<PlayerState> player =
+                getPlayers().stream().filter(p -> p.getPlayerId().equals(playerId)).findFirst();
+        return player.isPresent();
+    }
+
+    @JsonIgnore
+    public boolean canStartGame(String playerId) {
+        return !isStarted()
+                && isPlayerInGame(playerId)
+                && getPlayers().get(0).getPlayerId().equals(playerId);
     }
 }
