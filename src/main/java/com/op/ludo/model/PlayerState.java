@@ -69,4 +69,16 @@ public class PlayerState {
         this.playerType = playerType;
         this.stoneTheme = stoneTheme;
     }
+
+    @JsonIgnore
+    public Integer getDatabaseStonePosition(Integer stoneNumber) {
+        if (stoneNumber == 1) {
+            return getStone1();
+        } else if (stoneNumber == 2) {
+            return getStone2();
+        } else if (stoneNumber == 3) {
+            return getStone3();
+        }
+        return getStone4();
+    }
 }

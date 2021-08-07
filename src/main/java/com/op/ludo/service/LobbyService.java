@@ -112,7 +112,7 @@ public class LobbyService {
     }
 
     private Boolean canCreateLobby(Integer bid, String playerId) {
-        return !(bid != 100 || isPlayerAlreadyPartOfGame(playerId));
+        return bid == 100 && !isPlayerAlreadyPartOfGame(playerId);
     }
 
     private BoardState handleOnlineBoardRequest(LobbyRequest request) {

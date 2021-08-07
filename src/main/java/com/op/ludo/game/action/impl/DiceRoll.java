@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.op.ludo.game.action.AbstractAction;
 import com.op.ludo.game.action.Action;
+import java.util.concurrent.ThreadLocalRandom;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
@@ -52,7 +53,7 @@ public class DiceRoll extends AbstractAction<DiceRoll.DiceRollArgs> {
         }
 
         private Integer diceRollGenerator() {
-            return Math.toIntExact(Math.round(Math.random() * (6 - 1 + 1) + 1));
+            return ThreadLocalRandom.current().nextInt(1, 7);
         }
     }
 }
