@@ -1,5 +1,8 @@
 package com.op.ludo.service;
 
+import static com.op.ludo.model.BoardState.getNewStonePosition;
+import static com.op.ludo.model.BoardState.isStoneMovePossible;
+
 import com.op.ludo.dao.BoardStateRepo;
 import com.op.ludo.dao.PlayerStateRepo;
 import com.op.ludo.exceptions.BoardNotFoundException;
@@ -24,8 +27,6 @@ import org.springframework.stereotype.Service;
 @Service
 @Transactional
 public class GamePlayService {
-
-    @Autowired LobbyService lobbyService;
 
     @PersistenceContext EntityManager em;
 
@@ -202,79 +203,6 @@ public class GamePlayService {
             list.add(4);
         }
         return list;
-    }
-
-    private Boolean isStoneMovePossible(Integer currentPosition, Integer diceRoll) {
-        if (diceRoll < 1 || diceRoll > 6) {
-            return false;
-        }
-        if (currentPosition == 516
-                || currentPosition == 126
-                || currentPosition == 256
-                || currentPosition == 386) {
-            return false;
-        }
-        if (currentPosition < 0) {
-            return diceRoll == 6;
-        }
-        if (currentPosition > 99) {
-            return diceRoll <= 6 - currentPosition % 10;
-        }
-        return true;
-    }
-
-    private Integer getNewStonePosition(
-            Integer currentPosition, Integer diceRoll, Integer playerNumber)
-            throws InvalidPlayerMoveException {
-        if (!isStoneMovePossible(currentPosition, diceRoll)) {
-            throw new InvalidPlayerMoveException("Player move not possible");
-        }
-        if (currentPosition < 0 && diceRoll == 6) {
-            if (playerNumber == 1) {
-                return 1;
-            } else if (playerNumber == 2) {
-                return 14;
-            } else if (playerNumber == 3) {
-                return 27;
-            } else {
-                return 40;
-            }
-        }
-        if (currentPosition < 99) {
-            if (playerNumber == 1) {
-                if (currentPosition + diceRoll > 51) {
-                    return 510 + currentPosition + diceRoll - 51;
-                } else {
-                    return currentPosition + diceRoll;
-                }
-            } else if (playerNumber == 2) {
-                if (currentPosition <= 12 && diceRoll + currentPosition > 12) {
-                    return 120 + currentPosition + diceRoll - 12;
-                } else if (currentPosition + diceRoll > 52) {
-                    return (currentPosition + diceRoll) % 52 + 1;
-                } else {
-                    return currentPosition + diceRoll;
-                }
-            } else if (playerNumber == 3) {
-                if (currentPosition <= 25 && diceRoll + currentPosition > 25) {
-                    return 250 + currentPosition + diceRoll - 25;
-                } else if (currentPosition + diceRoll > 52) {
-                    return (currentPosition + diceRoll) % 52 + 1;
-                } else {
-                    return currentPosition + diceRoll;
-                }
-            } else {
-                if (currentPosition <= 38 && diceRoll + currentPosition > 38) {
-                    return 380 + currentPosition + diceRoll - 38;
-                } else if (currentPosition + diceRoll > 52) {
-                    return (currentPosition + diceRoll) % 52 + 1;
-                } else {
-                    return currentPosition + diceRoll;
-                }
-            }
-        } else {
-            return currentPosition + diceRoll;
-        }
     }
 
     @Transactional(value = Transactional.TxType.REQUIRES_NEW)
