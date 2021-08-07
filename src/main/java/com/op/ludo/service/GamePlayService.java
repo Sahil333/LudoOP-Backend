@@ -6,6 +6,7 @@ import static com.op.ludo.model.BoardState.isStoneMovePossible;
 import com.op.ludo.dao.BoardStateRepo;
 import com.op.ludo.dao.PlayerStateRepo;
 import com.op.ludo.exceptions.BoardNotFoundException;
+import com.op.ludo.exceptions.InvalidBoardRequest;
 import com.op.ludo.exceptions.InvalidPlayerMoveException;
 import com.op.ludo.game.action.AbstractAction;
 import com.op.ludo.game.action.impl.*;
@@ -135,6 +136,107 @@ public class GamePlayService {
         return actionList;
     }
 
+    public List<AbstractAction> getComputerStoneMoveActions(Long boardId, String playerId) {
+        if (em.getReference(PlayerState.class, playerId)
+                .getPlayerType()
+                .equalsIgnoreCase("computer")) {
+            List<AbstractAction> actionList = new ArrayList<>();
+            // So this method will move that stone which has the max points will initialize the to
+            // 100 and
+            // if the coin is immovable we will set its value to -1 and will move the coin with
+            // maximum points.
+            BoardState boardState = em.getReference(BoardState.class, boardId);
+            PlayerState playerState = em.getReference(PlayerState.class, playerId);
+            Integer maxPoints = -1;
+            Integer stoneWithMaxPoints = -1;
+            for (int i = 1; i < 5; i++) {
+                Integer currentPoints = getComputerStoneMovePoints(playerState, boardState, i);
+                if (currentPoints > maxPoints) {
+                    maxPoints = currentPoints;
+                    stoneWithMaxPoints = i;
+                }
+            }
+            // To do implement Stone Move for computer if possible other wise make diceRollPending
+            // for other player.
+            if (maxPoints == -1) {
+                PlayerState nextPlayer = boardState.getNextPlayer(playerState);
+                DiceRollPending diceRollPending =
+                        new DiceRollPending(boardState.getBoardId(), nextPlayer.getPlayerId());
+                actionList.add(diceRollPending);
+                boardState.setRollPending(true);
+                boardState.setMovePending(false);
+                Long actionTime = DateTimeUtil.nowEpoch();
+                boardState.setLastActionTime(actionTime);
+                boardState.setWhoseTurn(nextPlayer.getPlayerId());
+                timerService.scheduleActionCheck(
+                        boardState.getBoardId(), nextPlayer.getPlayerId(), actionTime);
+            } else {
+                StoneMove stoneMove = getNewStoneMove(playerState, boardState, stoneWithMaxPoints);
+                actionList.addAll(updateBoardWithStoneMove(stoneMove));
+            }
+            return actionList;
+        }
+        throw new InvalidBoardRequest("The player is not a computer.");
+    }
+
+    private Integer getComputerStoneMovePoints(
+            PlayerState currentPlayerState, BoardState boardState, Integer stoneNumber) {
+        Integer currentPosition = currentPlayerState.getDatabaseStonePosition(stoneNumber);
+        Integer currentDiceRoll = boardState.getLastDiceRoll();
+        if (isStoneMovePossible(currentPosition, currentDiceRoll)) {
+            Integer currentPoints = 100;
+            Integer finalPosition =
+                    getNewStonePosition(
+                            currentPosition, currentDiceRoll, currentPlayerState.getPlayerNumber());
+            Integer finalPosOtherStoneCount =
+                    getPositionOtherStoneCount(currentPlayerState, boardState, finalPosition);
+            Integer finalPosMyStoneCount =
+                    getPositionMyStoneCount(currentPlayerState, finalPosition);
+            Integer currentPositionOtherStoneCount =
+                    getPositionOtherStoneCount(currentPlayerState, boardState, currentPosition);
+            Integer currentPisitionMyStoneCount =
+                    getPositionMyStoneCount(currentPlayerState, currentPosition);
+            Boolean isCurrentPositionSafe =
+                    BoardState.isSafePosition(currentPosition)
+                            || currentPisitionMyStoneCount - 1 + currentPositionOtherStoneCount > 0;
+            Boolean isFinalPositionSafe =
+                    BoardState.isSafePosition(finalPosition)
+                            || finalPosMyStoneCount > 0
+                            || finalPosMyStoneCount + finalPosOtherStoneCount > 1;
+            Boolean isCutPossible = !isFinalPositionSafe && finalPosOtherStoneCount == 1;
+            if (isCurrentPositionSafe) {
+                currentPoints =
+                        currentPoints
+                                - 10; // penalising for moving the coin if current position is safe
+                // position
+            }
+            if (isFinalPositionSafe) {
+                currentPoints =
+                        currentPoints
+                                + 20; // highly awarding for moving the coin to a safe position
+            }
+            if (isCutPossible) {
+                currentPoints = currentPoints + 25; // making the computer highly aggressive
+            }
+            // To do(only if current computer is less smart than 90% player let more than 50%
+            // players win against computer):
+            // make computer more smart and check if other player can cut my stone with one step on
+            // initial position
+            return currentPoints;
+        }
+        return -1;
+    }
+
+    public List<AbstractAction> getComputerDiceRollActions(Long boardId, String playerId) {
+        if (em.getReference(PlayerState.class, playerId)
+                .getPlayerType()
+                .equalsIgnoreCase("computer")) {
+            DiceRollReq diceRollReq = new DiceRollReq(boardId, playerId);
+            return rollDiceForPlayer(diceRollReq);
+        }
+        throw new InvalidBoardRequest("The player is not a computer.");
+    }
+
     private StoneMove getNewStoneMove(
             PlayerState playerState, BoardState boardState, Integer stoneNumber) {
         Integer playerNumber = playerState.getPlayerNumber();
@@ -158,6 +260,47 @@ public class GamePlayService {
                 finalPosition);
     }
 
+    private Integer getPositionMyStoneCount(PlayerState playerState, Integer position) {
+        Integer count = 0;
+        if (playerState.getStone1().equals(position)) {
+            count++;
+        }
+        if (playerState.getStone2().equals(position)) {
+            count++;
+        }
+        if (playerState.getStone3().equals(position)) {
+            count++;
+        }
+        if (playerState.getStone4().equals(position)) {
+            count++;
+        }
+        return count;
+    }
+
+    private Integer getPositionOtherStoneCount(
+            PlayerState currentPlayerState, BoardState boardState, Integer position) {
+        List<PlayerState> playerStates = boardState.getPlayers();
+        Integer count = 0;
+        for (PlayerState playerState : playerStates) {
+            if (playerState.getPlayerId().equals(currentPlayerState.getPlayerId())) {
+                continue;
+            }
+            if (playerState.getStone1().equals(position)) {
+                count++;
+            }
+            if (playerState.getStone2().equals(position)) {
+                count++;
+            }
+            if (playerState.getStone3().equals(position)) {
+                count++;
+            }
+            if (playerState.getStone4().equals(position)) {
+                count++;
+            }
+        }
+        return count;
+    }
+
     private List<Integer> moveableStoneList(PlayerState playerState, BoardState boardState) {
         List<Integer> list = new ArrayList<>();
         Integer diceRoll = boardState.getLastDiceRoll();
@@ -173,6 +316,7 @@ public class GamePlayService {
         if (isStoneMovePossible(playerState.getStone4(), diceRoll)) {
             list.add(4);
         }
+
         return list;
     }
 
