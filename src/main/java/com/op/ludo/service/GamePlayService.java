@@ -50,6 +50,7 @@ public class GamePlayService {
         }
         BoardState board = boardOptional.get();
         gameStartChain.handleAction(board, gameStarted, actions);
+        boardStateRepo.save(board);
         return actions;
     }
 
