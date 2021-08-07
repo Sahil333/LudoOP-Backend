@@ -24,6 +24,8 @@ public class FirebaseConfig {
             FirebaseOptions options =
                     FirebaseOptions.builder()
                             .setCredentials(GoogleCredentials.fromStream(inputStream))
+                            .setDatabaseUrl(
+                                    "https://ludoop-b93a5-default-rtdb.asia-southeast1.firebasedatabase.app/")
                             .build();
             if (FirebaseApp.getApps().isEmpty()) {
                 FirebaseApp.initializeApp(options);
