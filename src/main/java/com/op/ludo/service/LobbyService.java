@@ -5,6 +5,7 @@ import com.op.ludo.dao.BoardStateRepo;
 import com.op.ludo.dao.PlayerStateRepo;
 import com.op.ludo.exceptions.BoardNotFoundException;
 import com.op.ludo.exceptions.InvalidBoardRequest;
+import com.op.ludo.exceptions.NotEnoughCoinsException;
 import com.op.ludo.helper.LobbyHelper;
 import com.op.ludo.model.BoardState;
 import com.op.ludo.model.PlayerState;
@@ -31,6 +32,8 @@ public class LobbyService {
 
     @Autowired PlayerQueueService playerQueueService;
 
+    @Autowired CoinService coinService;
+
     // TODO: should check if already part of game and has left the game. Essentially, the condition
     //  is a player can be part of one game at a time. If player/client is already part of a game,
     //  it should be able to leave that game.
@@ -49,6 +52,11 @@ public class LobbyService {
 
     public BoardState joinBoard(String playerId, Long boardId) {
         BoardState boardState = em.getReference(BoardState.class, boardId);
+        // this function should be used only for friend lobby join, so that issue coin is valid
+        Long coins = coinService.getCoins(playerId);
+        if (coins < boardState.getBid()) {
+            coinService.issueCoin(playerId, boardState.getBid() - coins);
+        }
         return joinBoard(playerId, boardState);
     }
 
@@ -94,10 +102,21 @@ public class LobbyService {
         if (!canCreateLobby(request.getBid(), request.getPlayerId())) {
             throw new IllegalArgumentException("Invalid board request");
         }
+        Long coins = coinService.getCoins(request.getPlayerId());
         switch (request.getType()) {
             case FRIEND:
+                if (coins < request.getBid()) {
+                    coinService.issueCoin(request.getPlayerId(), request.getBid() - coins);
+                }
                 return handleFriendBoardRequest(request);
             case ONLINE:
+                if (coins < request.getBid()) {
+                    throw new NotEnoughCoinsException(
+                            "Not enough coins in balance to start online, current coins="
+                                    + coins
+                                    + " required="
+                                    + request.getBid());
+                }
                 return handleOnlineBoardRequest(request);
             default:
                 throw new InvalidBoardRequest(

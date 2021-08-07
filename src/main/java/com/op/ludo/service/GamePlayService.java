@@ -6,10 +6,10 @@ import static com.op.ludo.model.BoardState.isStoneMovePossible;
 import com.op.ludo.dao.BoardStateRepo;
 import com.op.ludo.dao.PlayerStateRepo;
 import com.op.ludo.exceptions.BoardNotFoundException;
-import com.op.ludo.exceptions.InvalidBoardRequest;
 import com.op.ludo.exceptions.InvalidPlayerMoveException;
 import com.op.ludo.game.action.AbstractAction;
 import com.op.ludo.game.action.impl.*;
+import com.op.ludo.game.handlers.chain.GameStartChain;
 import com.op.ludo.game.handlers.chain.StoneMoveChain;
 import com.op.ludo.helper.LobbyHelper;
 import com.op.ludo.model.BoardState;
@@ -38,49 +38,20 @@ public class GamePlayService {
 
     @Autowired StoneMoveChain stoneMoveChain;
 
-    public List<AbstractAction> startFriendGame(Long boardId, String playerId) {
+    @Autowired GameStartChain gameStartChain;
+
+    public List<AbstractAction> startFriendGame(GameStarted gameStarted) {
         List<AbstractAction> actions = new ArrayList<>();
-        Optional<BoardState> boardOptional = boardStateRepo.findById(boardId);
+        Optional<BoardState> boardOptional =
+                boardStateRepo.findById(gameStarted.getArgs().getBoardId());
         if (boardOptional.isEmpty()) {
-            throw new BoardNotFoundException("boardId=" + boardId + " not found");
+            throw new BoardNotFoundException(
+                    "boardId=" + gameStarted.getArgs().getBoardId() + " not found");
         }
         BoardState board = boardOptional.get();
-        if (canStartGame(playerId, board)) {
-            doStartGame(board);
-            actions.add(new GameStarted(boardId, playerId));
-            AbstractAction playerTurn = new DiceRollPending(boardId, board.getWhoseTurn());
-            actions.add(playerTurn);
-            board.setRollPending(true);
-            board.setMovePending(false);
-            Long actionTime = DateTimeUtil.nowEpoch();
-            board.setLastActionTime(actionTime);
-            timerService.scheduleActionCheck(boardId, board.getWhoseTurn(), actionTime);
-            boardStateRepo.save(board);
-        } else {
-            throw new InvalidBoardRequest("Cannot start Game.");
-        }
+        gameStartChain.handleAction(board, gameStarted, actions);
+        boardStateRepo.save(board);
         return actions;
-    }
-
-    private void doStartGame(BoardState boardState) {
-        Long startTime = DateTimeUtil.nowEpoch();
-        boardState.setStartTime(startTime);
-        boardState.setLastActionTime(startTime);
-        boardState.setStarted(true);
-    }
-
-    private boolean canStartGame(String playerId, BoardState board) {
-        return !board.isStarted()
-                && isPlayerInGame(playerId, board)
-                && board.getPlayers().get(0).getPlayerId().equals(playerId);
-    }
-
-    public boolean isPlayerInGame(String playerId, BoardState board) {
-        Optional<PlayerState> player =
-                board.getPlayers().stream()
-                        .filter(p -> p.getPlayerId().equals(playerId))
-                        .findFirst();
-        return player.isPresent();
     }
 
     public List<AbstractAction> rollDiceForPlayer(DiceRollReq diceRollReq) {

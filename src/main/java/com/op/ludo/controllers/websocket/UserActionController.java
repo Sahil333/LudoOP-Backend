@@ -5,6 +5,7 @@ import com.op.ludo.controllers.dto.websocket.GameStartDto;
 import com.op.ludo.controllers.dto.websocket.StoneMoveDto;
 import com.op.ludo.game.action.AbstractAction;
 import com.op.ludo.game.action.impl.DiceRollReq;
+import com.op.ludo.game.action.impl.GameStarted;
 import com.op.ludo.game.action.impl.StoneMove;
 import com.op.ludo.service.CommunicationService;
 import com.op.ludo.service.GamePlayService;
@@ -26,8 +27,8 @@ public class UserActionController {
 
     @MessageMapping("/game/action/start")
     public void startGame(Principal principal, @Payload GameStartDto startReq) {
-        List<AbstractAction> actions =
-                gameService.startFriendGame(startReq.getBoardId(), principal.getName());
+        GameStarted gameStarted = new GameStarted(startReq.getBoardId(), principal.getName());
+        List<AbstractAction> actions = gameService.startFriendGame(gameStarted);
         communicationService.sendActions(startReq.getBoardId(), actions);
     }
 
