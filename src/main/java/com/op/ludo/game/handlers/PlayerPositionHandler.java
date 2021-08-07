@@ -34,6 +34,7 @@ public class PlayerPositionHandler extends ActionHandler {
     }
 
     private void issueCoins(String playerId, Integer playerPosition, int bid) {
+        // TODO: for different player counts there will be different percentages.
         if (playerPosition == 1) coinService.issueCoin(playerId, bid * 2L);
         else if (playerPosition == 2) coinService.issueCoin(playerId, (long) (bid * 1.2));
         else if (playerPosition == 3) coinService.issueCoin(playerId, (long) (bid * 0.4));

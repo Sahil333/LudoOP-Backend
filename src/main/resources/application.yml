@@ -22,6 +22,8 @@ firebase:
   auth:
     enabled: true
     fetch-user: false
+  database-url: https://ludoop-b93a5-default-rtdb.asia-southeast1.firebasedatabase.app/
+  config-path: firebase_config.json
 
 gameconfig:
   turn-time-limit: 10000

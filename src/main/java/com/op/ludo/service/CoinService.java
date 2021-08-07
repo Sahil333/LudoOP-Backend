@@ -8,16 +8,19 @@ import com.google.firebase.database.MutableData;
 import com.google.firebase.database.Transaction;
 import com.google.firebase.database.ValueEventListener;
 import com.op.ludo.exceptions.CoinServiceException;
+import com.op.ludo.model.UserData;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
 @Service
 @Slf4j
 public class CoinService {
 
     private static final String USER_COIN_PATH = "/users/%s/coins";
+    private static final String USER_PATH = "/users/%s";
 
     public void issueCoin(String playerId, Long numCoins) {
         FirebaseDatabase fDb = FirebaseDatabase.getInstance();
@@ -131,7 +134,49 @@ public class CoinService {
         }
     }
 
+    public void issueCoinForSignUp(String playerId) {
+        FirebaseDatabase fDb = FirebaseDatabase.getInstance();
+        DatabaseReference userRef = fDb.getReference(getUserPath(playerId));
+        userRef.runTransaction(
+                new Transaction.Handler() {
+                    @Override
+                    public Transaction.Result doTransaction(MutableData userData) {
+                        UserData info = userData.getValue(UserData.class);
+                        if (ObjectUtils.isEmpty(info)) {
+                            info = new UserData();
+                            info.setCoins(1000L);
+                            info.setSignUpDone(true);
+                            userData.setValue(info);
+                        } else if (!info.isSignUpDone()) {
+                            info.setSignUpDone(true);
+                            info.setCoins(1000L);
+                            userData.setValue(info);
+                        }
+
+                        return Transaction.success(userData);
+                    }
+
+                    @Override
+                    public void onComplete(
+                            DatabaseError error, boolean committed, DataSnapshot currentData) {
+                        if (error == null) {
+                            log.info("Added signup coins={} for player={}", 1000L, playerId);
+                        } else {
+                            log.error(
+                                    "failed to add signup coins={} for player={}, error={}",
+                                    1000L,
+                                    playerId,
+                                    error.getMessage());
+                        }
+                    }
+                });
+    }
+
     private String getUserCoinPath(String playerId) {
         return String.format(USER_COIN_PATH, playerId);
+    }
+
+    private String getUserPath(String playerId) {
+        return String.format(USER_PATH, playerId);
     }
 }
